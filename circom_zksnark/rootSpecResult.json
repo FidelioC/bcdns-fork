@@ -1,0 +1,10 @@
+{
+  "has_name": 1,
+  "has_id": 1,
+  "has_chainType": 1,
+  "has_bootNodes": 1,
+  "has_telemetryEndpoints": 1,
+  "has_protocolId": 1,
+  "has_properties": 1,
+  "has_codeSubstitutes": 1
+}

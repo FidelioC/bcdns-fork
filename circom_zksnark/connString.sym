@@ -1,0 +1,9 @@
+1,1,0,main.all_valid
+2,-1,0,main.has_name
+3,-1,0,main.has_id
+4,-1,0,main.has_chainType
+5,-1,0,main.has_bootNodes
+6,-1,0,main.has_telemetryEndpoints
+7,-1,0,main.has_protocolId
+8,-1,0,main.has_properties
+9,-1,0,main.has_codeSubstitutes
