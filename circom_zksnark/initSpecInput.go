@@ -8,8 +8,8 @@ import (
 )
 
 type SpecInput struct{
-	Name string `json:"name"`
-	ID string `json:"id"`
+	Name uint64 `json:"name"`
+	ID uint64 `json:"id"`
 	ChainType string `json:"chainType"`
 	BootNodes *[]string `json:"bootNodes"`
 	TelemetryEndpoints *[]string `json:"telemetryEndpoints"`
@@ -18,7 +18,7 @@ type SpecInput struct{
 	CodeSubstitutes map[string]string `json:"codeSubstitutes"`
 }
 
-func createSpecJSON(tldInput string) (SpecInput){
+func createSpecJSON(tldInput uint64) (SpecInput){
 	SpecJSON := SpecInput{
 		Name: tldInput,
 		ID: tldInput,
@@ -67,6 +67,22 @@ func splitDomain(domainInput string) (string, string, error){
 	return split[0], split[1], nil
 }
 
+func stringToNumber(stringInput string) uint64 {
+	// base 256 encoding
+	var result uint64 = 0;
+	for i:=0; i < len(stringInput); i++{
+		result = result*256 + uint64(stringInput[i])
+	}
+
+	return result
+}
+
+func createJSONFile(stringInput string, fileName string){
+	var numberEncoding uint64 = stringToNumber(stringInput)
+	SpecInput := createSpecJSON(numberEncoding)
+	createSpecJSONFile(SpecInput, fileName)
+}
+
 func main(){
 	if len (os.Args) < 2{
 		fmt.Println("Usage: go run main.go <domain>")
@@ -88,10 +104,8 @@ func main(){
 	fmt.Println("tld:", tld)
 	
 	// create tld spec input json
-	tldSpecInput := createSpecJSON(tld)
-	createSpecJSONFile(tldSpecInput, "tldSpecInput.json")
+	createJSONFile(tld, "tldSpecInput.json")
 
 	// create target spec input json
-	targetSpecInput := createSpecJSON(domainName)
-	createSpecJSONFile(targetSpecInput, "targetSpecInput.json")
+	createJSONFile(domainName, "targetSpecInput.json")
 }
