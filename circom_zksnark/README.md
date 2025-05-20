@@ -24,5 +24,5 @@
   - snarkjs groth16 setup multiplier2.r1cs pot12_final.ptau multiplier2_0000.zkey
   - snarkjs zkey contribute multiplier2_0000.zkey multiplier2_0001.zkey --name="1st Contributor Name" -v
   - snarkjs zkey export verificationkey multiplier2_0001.zkey verification_key.json
-  - snarkjs groth16 prove multiplier2_0001.zkey ./multiplier2_js/witness.wtns proof.json public.json
+  - snarkjs groth16 prove multiplier2_0001.zkey ./witness.wtns proof.json public.json
   - snarkjs groth16 verify verification_key.json public.json proof.json

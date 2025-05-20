@@ -10,24 +10,12 @@ import (
 type SpecInput struct{
 	Name uint64 `json:"name"`
 	ID uint64 `json:"id"`
-	ChainType string `json:"chainType"`
-	BootNodes *[]string `json:"bootNodes"`
-	TelemetryEndpoints *[]string `json:"telemetryEndpoints"`
-	ProtocolID *map[string]string `json:"protocolID"`
-	Properties *map[string]string `json:"properties"`
-	CodeSubstitutes map[string]string `json:"codeSubstitutes"`
 }
 
 func createSpecJSON(tldInput uint64) (SpecInput){
 	SpecJSON := SpecInput{
 		Name: tldInput,
 		ID: tldInput,
-		ChainType: "default",
-		BootNodes: nil,
-		TelemetryEndpoints: nil,
-		ProtocolID: nil,
-		Properties: nil,
-		CodeSubstitutes: map[string]string{},
 	}
 
 	return SpecJSON

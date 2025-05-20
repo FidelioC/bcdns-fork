@@ -2,8 +2,8 @@ pragma circom 2.0.0;
 
 include "../circom/node_modules/circomlib/circuits/poseidon.circom";
 
-// to check if the connection string format is correct
-template check_format_correct(){
+template Main() {
+    // Format check inputs
     signal input has_name;
     signal input has_id;
     signal input has_chainType;
@@ -13,9 +13,15 @@ template check_format_correct(){
     signal input has_properties;
     signal input has_codeSubstitutes;
 
-    signal output all_valid;
+    // Hash inputs
+    signal input name;
+    signal input id;
 
-    // check each value = 1, constraint
+    // Outputs
+    signal output all_valid;
+    signal output hashOut;
+
+    // Enforce all are 1 (format check)
     has_name === 1;
     has_id === 1;
     has_chainType === 1;
@@ -25,28 +31,16 @@ template check_format_correct(){
     has_properties === 1;
     has_codeSubstitutes === 1;
 
-    // format valid, iff all inputs are 1 or total = 8
-    all_valid <== has_name + has_id + has_chainType + has_bootNodes + has_telemetryEndpoints + 
-            has_protocolId + has_properties + has_codeSubstitutes;
-}
+    // Compute format validity (sum should be 8)
+    all_valid <== has_name + has_id + has_chainType + has_bootNodes +
+                  has_telemetryEndpoints + has_protocolId + has_properties +
+                  has_codeSubstitutes;
 
-// to verify the target of the connection string
-template source_conn_string() {
-    signal input name;
-    signal input id;
-    signal input bootNodes;
-    signal input telemetryEndpoints;
-    signal input protocolID;
-    signal input properties;
-    signal input codeSubstitutes;
-    
-    signal output hashOut;
-
+    // Hash name and id
     component hash = Poseidon(2);
     hash.inputs[0] <== name;
     hash.inputs[1] <== id;
-
     hashOut <== hash.out;
 }
 
-component main = check_format_correct();
+component main = Main();
