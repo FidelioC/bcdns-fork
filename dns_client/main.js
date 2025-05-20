@@ -7,6 +7,7 @@ const MODE = process.env.BCDNS_MODE || 'onetime';
 const WEB_PORT = parseInt(process.env.BCDNS_WEB_PORT || '3000');
 
 const runOneTime = async () => {
+    console.log(process.argv.length)
     if (process.argv.length < 4) {
         console.error('Usage:\n\nnpm start -- <type> <value>\nwhere type is either "domain" or "asset"');
         process.exit(1);

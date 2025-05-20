@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"strings"
 )
 
@@ -45,7 +46,7 @@ func createSpecJSONFile(jsonInput SpecInput, fileName string){
 	fmt.Printf("%s created successfully\n", fileName)
 }
 
-func splitDomain(domainInput string) (string, string, error){
+func SplitDomain(domainInput string) (string, string, error){
 	split := strings.Split(domainInput, ".")
 
 	if len(split) != 2 {
@@ -65,22 +66,15 @@ func stringToNumber(stringInput string) uint64 {
 	return result
 }
 
-func createJSONFile(stringInput string, fileName string){
+func CreateJSONFile(stringInput string, fileName string){
 	var numberEncoding uint64 = stringToNumber(stringInput)
 	SpecInput := createSpecJSON(numberEncoding)
 	createSpecJSONFile(SpecInput, fileName)
 }
 
-func main(){
-	if len (os.Args) < 2{
-		fmt.Println("Usage: go run main.go <domain>")
-		return
-	}
-
-	domain := os.Args[1]
-
+func initSpecInput(domain string, tldFileName string, targetFileName string){
 	// split domain
-	domainName, tld, err := splitDomain(domain)
+	domainName, tld, err := SplitDomain(domain)
 	
 	if err != nil {
 		fmt.Println("Error: ", err)
@@ -92,8 +86,62 @@ func main(){
 	fmt.Println("tld:", tld)
 	
 	// create tld spec input json
-	createJSONFile(tld, "tldSpecInput.json")
+	CreateJSONFile(tld, tldFileName)
 
 	// create target spec input json
-	createJSONFile(domainName, "targetSpecInput.json")
+	CreateJSONFile(domainName, targetFileName)
 }
+
+func checkFormatSpecPy(formatInput string, formatResultOutput string){
+	cmd := exec.Command("python3", "checkSpecFormat.py", "--input-file", formatInput, "--output-file", formatResultOutput)
+
+	output, err := cmd.CombinedOutput()
+
+	if err != nil{
+		fmt.Println("Error:", err)
+		fmt.Println("Python output:\n", string(output))
+		return
+	}
+
+	fmt.Println(string(output))
+}
+
+func combineJSONFile(file1 string, file2 string, combineFileOutput string){
+	cmd := exec.Command("python3", "combineJson.py", "--file1", file1, "--file2", file2, "--output", combineFileOutput)
+
+	output, err := cmd.CombinedOutput()
+
+	if err != nil{
+		fmt.Println("Error:", err)
+		fmt.Println("Python output:\n", string(output))
+		return
+	}
+
+	fmt.Println(string(output))
+}
+
+func main(){
+	if len (os.Args) < 2{
+		fmt.Println("Usage: go run main.go <domain>")
+		return
+	}
+	
+	// domain name
+	domain := os.Args[1]
+
+	// create tld and target spec input json file based off the domain name
+	tldFileName := "tldSpecInput.json" // output
+	targetFileName := "targetSpecInput.json" // output
+	initSpecInput(domain, tldFileName, targetFileName)
+
+	// expected valid format json
+	formatResultInput := "validChainSpec.json"
+	formatResultOutput := "validSpecResult.json" // output
+	checkFormatSpecPy(formatResultInput, formatResultOutput)
+
+	// combine both files above to create circom json input
+	tldCircomInput := "tldCircomInput.json" // output
+	targetCircomInput := "targetCircomInput.json" // output
+	combineJSONFile(tldFileName, formatResultOutput, tldCircomInput)
+	combineJSONFile(targetFileName, formatResultOutput, targetCircomInput)
+}	

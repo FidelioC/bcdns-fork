@@ -48,9 +48,13 @@ class DNSResolver {
      */
     async resolve(domain) {
         let parsedDomain = this.#parseAssetDomain(domain);
+        console.log("parsedDomain " + parsedDomain.domain)
         let tld = getTLD(parsedDomain.domain);
+        console.log("tld " + tld)
         let tldSpec = await getTLDSpec(tld, this.rootSpec);
+        console.log("tldSpec " + JSON.stringify(tldSpec))
         let targetSpec = await getTargetSpec(parsedDomain.domain, tldSpec);
+        console.log("targetSpec " + JSON.stringify(targetSpec))
 
         if (parsedDomain.assetId) {
             let asset = await this.resolveAsset(targetSpec, parsedDomain.assetId);

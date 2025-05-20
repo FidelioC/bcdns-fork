@@ -16,7 +16,6 @@ required_keys = [
 
 result_dict = {}
 
-
 def key_presence(required_keys, source_json):
     for key in required_keys:
         result_dict[f"has_{key}"] = 1 if key in source_json else 0
@@ -45,7 +44,7 @@ def main(input_file, output_file):
     with open(output_file, "w") as result_json:
         json.dump(result, result_json, indent=2)
 
-    # print(result)
+    print(f"Python - checkSpecFormat.py: {output_file} created successfully")
 
 
 if __name__ == "__main__":
