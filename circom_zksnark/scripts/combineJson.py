@@ -17,7 +17,7 @@ def write_json_file(filepath, data):
     try:
         with open(filepath, 'w') as f:
             json.dump(data, f, indent=2)
-        click.echo(f"Combined JSON written to {filepath}")
+        click.echo(f"combineJson.py: Combined JSON written to {filepath} created successfully")
     except Exception as e:
         click.echo(f"Error writing {filepath}: {e}")
         sys.exit(1)

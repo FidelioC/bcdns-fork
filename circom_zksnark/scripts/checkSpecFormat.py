@@ -1,7 +1,7 @@
 import json
 import click
 
-# usage: python3 key_presence.py --input-file rootSpec.json --output-file conn_string_result.json
+# usage: python3 checkSpecFormat.py --input-file rootSpec.json --output-file conn_string_result.json
 
 required_keys = [
     "name",
@@ -44,7 +44,7 @@ def main(input_file, output_file):
     with open(output_file, "w") as result_json:
         json.dump(result, result_json, indent=2)
 
-    print(f"Python - checkSpecFormat.py: {output_file} created successfully")
+    print(f"checkSpecFormat.py: {output_file} created successfully")
 
 
 if __name__ == "__main__":

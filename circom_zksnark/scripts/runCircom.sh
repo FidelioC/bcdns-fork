@@ -1,15 +1,20 @@
 #!/bin/bash
 set -e
 
-cd circomCombined
+input_file=$1 # input file name
+
+# make folder for the desired input json
+mkdir ../$input_file
+
+cd ../$input_file 
 
 # compile circom file
-circom circomCheck.circom --r1cs --wasm --sym
+circom ../scripts/circomCheck.circom --r1cs --wasm --sym
 
 cd circomCheck_js
 
 # generate witness
-node generate_witness.js circomCheck.wasm ../../specInputCombined.json witness.wtns
+node generate_witness.js circomCheck.wasm ../.././circom_inputs/$input_file.json witness.wtns
 
 # powers of tau
 snarkjs powersoftau new bn128 12 pot12_0000.ptau -v
