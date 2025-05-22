@@ -11,6 +11,6 @@ rm -rf ../circom_inputs_init
 
 # Remove circoms prove
 rm -rf ../circom_proves
-rm -f ../proveCircomFiles
+rm -rf ../proveCircomFiles
 
 echo "Cleanup complete!"
