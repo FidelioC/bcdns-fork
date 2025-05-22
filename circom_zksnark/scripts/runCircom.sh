@@ -1,12 +1,13 @@
 #!/bin/bash
 set -e
 
-input_file=$1 # input file name
+folder_path=$1 # new folder path for circom files
+input_file_loc=$2 # location of spec input file
 
 # make folder for the desired input json
-mkdir ../$input_file
+mkdir $folder_path
 
-cd ../$input_file 
+cd $folder_path 
 
 # compile circom file
 circom ../scripts/circomCheck.circom --r1cs --wasm --sym
@@ -14,7 +15,7 @@ circom ../scripts/circomCheck.circom --r1cs --wasm --sym
 cd circomCheck_js
 
 # generate witness
-node generate_witness.js circomCheck.wasm ../.././circom_inputs/$input_file.json witness.wtns
+node generate_witness.js circomCheck.wasm $input_file_loc witness.wtns
 
 # powers of tau
 snarkjs powersoftau new bn128 12 pot12_0000.ptau -v

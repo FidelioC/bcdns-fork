@@ -16,6 +16,7 @@ required_keys = [
 
 result_dict = {}
 
+
 def key_presence(required_keys, source_json):
     for key in required_keys:
         result_dict[f"has_{key}"] = 1 if key in source_json else 0
