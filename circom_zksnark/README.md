@@ -19,6 +19,6 @@
 
 - example usage overall:
 
-1.  cd circom_zksnark/scripts/ && go run initZkSnark.go --init example.com
+1.  cd ./circom_zksnark/scripts/ && go run initZkSnark.go --init example.com
 2.  go run initZkSnark.go --node-prove ../test/targetChainSpecTest.json
-3.  go run initZkSnark.go --cleanup
+3.  cd ./circom_zksnark/scripts/ && go run initZkSnark.go --cleanup
