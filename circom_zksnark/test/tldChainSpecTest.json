@@ -1,0 +1,13 @@
+{
+  "name": "com",
+  "id": "com",
+  "chainType": "Local",
+  "bootNodes": [
+    "/ip4/172.18.0.2/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh",
+    "/ip4/172.18.0.3/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh"
+  ],
+  "telemetryEndpoints": null,
+  "protocolId": null,
+  "properties": null,
+  "codeSubstitutes": {}
+}

@@ -1,2 +1,6 @@
-circom
+circom_inputs_init
 node_modules
+circom_proves
+proveCircomFiles
+targetCircomInput
+tldCircomInput
