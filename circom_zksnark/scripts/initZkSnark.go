@@ -18,7 +18,7 @@ const (
 	TARGET_CIRCOM_INPUT = "../circom_inputs_init/targetCircomInput.json"
 	PROVE_FOLDER_NAME = "../circom_proves"
 	PROVE_FORMAT_OUTPUT = "../circom_proves/proveSpecResult.json"
-	PROVE_NAME_ID_OUTPUT = "../circom_proves/proveNameIdInput.json"
+	PROVE_NAME_ID_OUTPUT = "../circom_proves/proveNameIdOutput.json"
 	PROVE_CIRCOM_INPUT = "../circom_proves/proveCircomInput.json"
 )
 
@@ -74,8 +74,7 @@ func main(){
 		go_modules.CheckFormatSpecPy(prove_file_path, PROVE_FORMAT_OUTPUT)
 
 		// get the name and id field, convert to int
-		result, _ := go_modules.FieldToInt(prove_file_path)
-		go_modules.WriteJSONToFile(result, PROVE_NAME_ID_OUTPUT)
+		go_modules.NameIdConvertPy(prove_file_path, PROVE_NAME_ID_OUTPUT)
 
 		// combine both files spec (main & id) + (format binaries) to create circom json input
 		go_modules.CombineJSONFile(PROVE_NAME_ID_OUTPUT, PROVE_FORMAT_OUTPUT, PROVE_CIRCOM_INPUT)

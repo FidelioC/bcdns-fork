@@ -1,59 +1,10 @@
 package go_modules
 
 import (
-	"encoding/json"
 	"fmt"
-	"math/big"
 	"os"
 	"os/exec"
 )
-
-func stringToBase256Int(s string) *big.Int {
-    result := big.NewInt(0)
-    base := big.NewInt(256)
-
-    for i := 0; i < len(s); i++ {
-        result.Mul(result, base)
-        result.Add(result, big.NewInt(int64(s[i])))
-    }
-    return result
-}
-
-func FieldToInt(inputPath string) (map[string] string, error){
-	file, err := os.ReadFile(inputPath)
-    if err != nil {
-        return nil, err
-    }
-
-    var original map[string]interface{}
-    if err := json.Unmarshal(file, &original); err != nil {
-        return nil, err
-    }
-
-    result := make(map[string]string)
-    keys := []string{"name", "id"}
-
-    for _, key := range keys {
-        if val, ok := original[key].(string); ok {
-            num := stringToBase256Int(val)
-            result[key] = num.String()
-        }
-    }
-
-    return result, nil
-}
-
-func WriteJSONToFile(data map[string]string, outputPath string) error {
-    file, err := os.Create(outputPath)
-    if err != nil {
-        return err
-    }
-    defer file.Close()
-
-    encoder := json.NewEncoder(file)
-    encoder.SetIndent("", "  ")
-    return encoder.Encode(data)
-}
 
 func printErrMessage(output []byte, err error){
 	fmt.Println("Error:", err)
@@ -98,6 +49,21 @@ func CheckFormatSpecPy(formatInput string, formatResultOutput string) error{
 
 func CombineJSONFile(file1 string, file2 string, combineFileOutput string) error{
 	cmd := exec.Command("python3", "combineJson.py", "--file1", file1, "--file2", file2, "--output", combineFileOutput)
+
+	output, err := cmd.CombinedOutput()
+
+	if err != nil{
+		printErrMessage(output, err)
+		return err
+	}
+
+	fmt.Println(string(output))
+
+	return nil
+}
+
+func NameIdConvertPy(input string, outputFile string) error{
+	cmd := exec.Command("python3", "nameIdIntConvert.py", "--input", input, "--output", outputFile)
 
 	output, err := cmd.CombinedOutput()
 
