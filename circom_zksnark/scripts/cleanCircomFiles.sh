@@ -10,7 +10,6 @@ rm -rf ../$input_file
 rm -rf ../circom_inputs_init
 
 # Remove circoms prove
-rm -rf ../circom_proves
-rm -rf ../proveCircomFiles
+rm -rf ../*{-tld,-target}
 
 echo "Cleanup complete!"

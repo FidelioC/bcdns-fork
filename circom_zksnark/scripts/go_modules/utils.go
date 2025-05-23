@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 )
 
 func printErrMessage(output []byte, err error){
@@ -85,11 +87,21 @@ func CallBashFiles(scriptPath string, args ...string) error{
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
+	
 	err := cmd.Run()
 	if err != nil {
 		fmt.Printf("Error executing script %s: %v\n", scriptPath, err)
 		return err
 	}
 	return nil
+}
+
+func GetFileNameWithoutExt(path string) string {
+	fileName := filepath.Base(path)
+	ext := filepath.Ext(fileName)
+	return strings.TrimSuffix(fileName, ext)
+}
+
+func RemovePrefixFlag(flag string) string {
+	return strings.TrimPrefix(flag, "--")
 }
