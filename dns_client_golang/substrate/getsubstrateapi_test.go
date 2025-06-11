@@ -1,3 +1,11 @@
+package substrate
+
+import (
+	"encoding/json"
+	"os"
+	"testing"
+)
+
 func TestGetSubstrateApi(t *testing.T) {
 	// Load spec from JSON
 	data, err := os.ReadFile("../../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json")
