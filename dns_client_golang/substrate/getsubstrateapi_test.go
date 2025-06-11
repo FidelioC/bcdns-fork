@@ -1,11 +1,3 @@
-package substrate
-
-import (
-	"encoding/json"
-	"os"
-	"testing"
-)
-
 func TestGetSubstrateApi(t *testing.T) {
 	// Load spec from JSON
 	data, err := os.ReadFile("../../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json")
@@ -28,7 +20,7 @@ func TestGetSubstrateApi(t *testing.T) {
 		t.Fatal("Failed to get Substrate API:", err)
 	}
 
-	// Fetch and log chain info
+	// System info
 	chainName, err := api.RPC.System.Chain()
 	if err != nil {
 		t.Fatalf("Failed to get chain name: %v", err)
@@ -44,19 +36,14 @@ func TestGetSubstrateApi(t *testing.T) {
 		t.Fatalf("Failed to get node version: %v", err)
 	}
 
+	nodePeers, err := api.RPC.System.Peers()
+	if err != nil {
+		t.Fatalf("Failed to get peers: %v", err)
+	}
+
 	blockHash, err := api.RPC.Chain.GetBlockHashLatest()
 	if err != nil {
 		t.Fatalf("Failed to get latest block hash: %v", err)
-	}
-
-	peerId, err := api.RPC.System.LocalPeerId()
-	if err != nil {
-		t.Fatalf("Failed to get peer ID: %v", err)
-	}
-
-	listenAddrs, err := api.RPC.System.LocalListenAddresses()
-	if err != nil {
-		t.Fatalf("Failed to get listen addresses: %v", err)
 	}
 
 	t.Logf("Successfully connected to Substrate API")
@@ -64,8 +51,9 @@ func TestGetSubstrateApi(t *testing.T) {
 	t.Logf("Node: %s", nodeName)
 	t.Logf("Version: %s", nodeVersion)
 	t.Logf("Latest block hash: %v", blockHash)
-	t.Logf("Peer ID: %s", peerId)
-	for i, addr := range listenAddrs {
-		t.Logf("Listening address %d: %s", i+1, addr)
+
+	t.Logf("Connected peers: %d", len(nodePeers))
+	for i, peer := range nodePeers {
+		t.Logf("Peer %d ID: %s, Role: %s", i+1, peer.PeerID, peer.Roles)
 	}
 }
