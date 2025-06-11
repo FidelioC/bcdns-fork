@@ -6,7 +6,6 @@ import (
 	"testing"
 )
 
-
 func TestGetSubstrateApi(t *testing.T) {
 	// Load spec from JSON
 	data, err := os.ReadFile("../../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json")
@@ -29,5 +28,29 @@ func TestGetSubstrateApi(t *testing.T) {
 		t.Fatal("Failed to get Substrate API:", err)
 	}
 
-	t.Log("Successfully connected to Substrate API:", api)
+	// Fetch and log chain info
+	chainName, err := api.RPC.System.Chain()
+	if err != nil {
+		t.Fatalf("Failed to get chain name: %v", err)
+	}
+
+	nodeName, err := api.RPC.System.Name()
+	if err != nil {
+		t.Fatalf("Failed to get node name: %v", err)
+	}
+
+	nodeVersion, err := api.RPC.System.Version()
+	if err != nil {
+		t.Fatalf("Failed to get node version: %v", err)
+	}
+
+	blockHash, err := api.RPC.Chain.GetBlockHashLatest()
+	if err != nil {
+		t.Fatalf("Failed to get latest block hash: %v", err)
+	}
+
+	t.Logf("Successfully connected to Substrate API\n"+
+		"Chain: %s\nNode: %s\nVersion: %s\nLatest block hash: %v",
+		chainName, nodeName, nodeVersion, blockHash)
 }
+
