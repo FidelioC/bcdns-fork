@@ -49,8 +49,23 @@ func TestGetSubstrateApi(t *testing.T) {
 		t.Fatalf("Failed to get latest block hash: %v", err)
 	}
 
-	t.Logf("Successfully connected to Substrate API\n"+
-		"Chain: %s\nNode: %s\nVersion: %s\nLatest block hash: %v",
-		chainName, nodeName, nodeVersion, blockHash)
-}
+	peerId, err := api.RPC.System.LocalPeerId()
+	if err != nil {
+		t.Fatalf("Failed to get peer ID: %v", err)
+	}
 
+	listenAddrs, err := api.RPC.System.LocalListenAddresses()
+	if err != nil {
+		t.Fatalf("Failed to get listen addresses: %v", err)
+	}
+
+	t.Logf("Successfully connected to Substrate API")
+	t.Logf("Chain: %s", chainName)
+	t.Logf("Node: %s", nodeName)
+	t.Logf("Version: %s", nodeVersion)
+	t.Logf("Latest block hash: %v", blockHash)
+	t.Logf("Peer ID: %s", peerId)
+	for i, addr := range listenAddrs {
+		t.Logf("Listening address %d: %s", i+1, addr)
+	}
+}
