@@ -1,13 +1,9 @@
 package main
 
 import (
-	"bufio"
 	"context"
 	"fmt"
 	"log"
-	"os"
-	"strings"
-	"time"
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 	libp2p "github.com/libp2p/go-libp2p"
@@ -16,6 +12,8 @@ import (
 	peer "github.com/libp2p/go-libp2p/core/peer"
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ma "github.com/multiformats/go-multiaddr" //https://github.com/multiformats/multiaddr
+
+	"github.com/FidelioC/verifying_network/utils"
 )
 
 // topic name should always be the same for all nodes in the verifying network
@@ -35,7 +33,7 @@ func NewVerifierNode(ctx context.Context, bootstrap string) *VerifierNode {
 		log.Fatal(err)
 	}
 
-	// if bootstrap address was provided, to talk to other peers
+	// if bootstrap address was provided, to talk to other existing peers
 	if bootstrap != "" {
 		// parse the multiaddr string, e.g., /ip6/2604:3d09:a98d:b100:4552:be06:a3ca:b295/udp/64042/webrtc-direct/certhash/uEiAAKlDpHtl0D3aOBbJEEYqArQLTuZ9zL-smFMJ17JGrag/p2p/12D3KooWAVaoXdP8wurmgFXizqKHV4NGZnHzJxpKdmyAvfS9tEW1
 		maddr, err := ma.NewMultiaddr(bootstrap)
@@ -111,25 +109,27 @@ func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
 }
 
 func main() {
-	bootstrap := ""
-	if len(os.Args) >= 2 {
-		bootstrap = strings.TrimSpace(os.Args[1])
-	}
+	// bootstrap := ""
+	// if len(os.Args) >= 2 {
+	// 	bootstrap = strings.TrimSpace(os.Args[1])
+	// }
 
-	ctx := context.Background()
-	vn := NewVerifierNode(ctx, bootstrap)
-	vn.PrintHostInfo()
-	vn.ListenForMessages(ctx)
+	// ctx := context.Background()
+	// vn := NewVerifierNode(ctx, bootstrap)
+	// vn.PrintHostInfo()
+	// vn.ListenForMessages(ctx)
 
-	// Simple CLI loop to send messages to other nodes
-	scanner := bufio.NewScanner(os.Stdin)
-	fmt.Println("Type messages to send to other nodes:")
-	for scanner.Scan() {
-		text := scanner.Text()
-		if strings.TrimSpace(text) == "" {
-			continue
-		}
-		vn.SendMessage(ctx, fmt.Sprintf("%s: %s", vn.host.ID().ShortString(), text))
-		time.Sleep(100 * time.Millisecond)
-	}
+	// // Simple CLI loop to send messages to other nodes
+	// scanner := bufio.NewScanner(os.Stdin)
+	// fmt.Println("Type messages to send to other nodes:")
+	// for scanner.Scan() {
+	// 	text := scanner.Text()
+	// 	if strings.TrimSpace(text) == "" {
+	// 		continue
+	// 	}
+	// 	vn.SendMessage(ctx, fmt.Sprintf("%s: %s", vn.host.ID().ShortString(), text))
+	// 	time.Sleep(100 * time.Millisecond)
+	// }
+
+	utils.DomainResolution("example.com");
 }
