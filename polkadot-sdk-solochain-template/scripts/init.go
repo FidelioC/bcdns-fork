@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"io"
@@ -49,6 +50,45 @@ func withOptions(options *ArchOptions) ArchOption {
 	}
 }
 
+func runCommand(cmd *exec.Cmd, name string) error {
+	fmt.Printf("[CMD] Starting: %s\n", name)
+
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("error creating stdout pipe: %v", err)
+	}
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("error creating stderr pipe: %v", err)
+	}
+
+	if err := cmd.Start(); err != nil {
+		return fmt.Errorf("error starting command: %v", err)
+	}
+
+	// stream output
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		for scanner.Scan() {
+			fmt.Printf("[%s] %s\n", name, scanner.Text())
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		for scanner.Scan() {
+			fmt.Printf("[%s ERR] %s\n", name, scanner.Text())
+		}
+	}()
+
+	if err := cmd.Wait(); err != nil {
+		return fmt.Errorf("command failed: %v", err)
+	}
+
+	fmt.Printf("[CMD] Completed: %s\n", name)
+	return nil
+}
+
 func launchArch(setters ...ArchOption) {
 	o := &ArchOptions{}
 
@@ -66,23 +106,23 @@ func launchArch(setters ...ArchOption) {
 		"--nodes",
 		strconv.Itoa(o.normal_nodes))
 	cmd.Dir = "../"
-	out, err := cmd.CombinedOutput()
-	if err != nil {
+
+	if err := runCommand(cmd, "launch_dns_arch.sh"); err != nil {
 		fmt.Printf("Error executing launch_dns_arch.sh: %v\n", err)
+	} else {
+		fmt.Println("Successfully launched DNS architecture.")
 	}
-	fmt.Printf("launch_dns_arch.sh: %s\n", string(out))
-	fmt.Println("Successfully launched DNS architecture.")
 }
 
 func cleanArch() {
 	cmd := exec.Command("./dns_arch_cleanup.sh")
 	cmd.Dir = "../"
-	out, err := cmd.CombinedOutput()
-	if err != nil {
+
+	if err := runCommand(cmd, "dns_arch_cleanup.sh"); err != nil {
 		fmt.Printf("Error executing dns_arch_cleanup.sh: %v\n", err)
+	} else {
+		fmt.Println("Successfully cleaned up DNS architecture.")
 	}
-	fmt.Printf("dns_arch_cleanup.sh: %s\n", string(out))
-	fmt.Println("Successfully cleaned up DNS architecture.")
 }
 
 func copySHFiles() error {
@@ -109,7 +149,6 @@ func copySHFiles() error {
 			return err
 		}
 
-		// Make the file executable
 		err = os.Chmod(filepath.Join("..", file), 0755)
 		if err != nil {
 			return err
@@ -119,115 +158,74 @@ func copySHFiles() error {
 }
 
 func setupDNSInfo() {
-	fmt.Printf("Setting up DNS information...")
+	fmt.Println("Setting up DNS information...")
 
-	cmd := exec.Command("npm",
-		"install")
+	// npm install
+	cmd := exec.Command("npm", "install")
 	cmd.Dir = "../../dns_client"
-
-	out, err := cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
+	if err := runCommand(cmd, "npm install"); err != nil {
+		fmt.Printf("Error during npm install: %v\n", err)
 	}
 
-	cmd = exec.Command("npm",
-		"run",
-		"register",
-		"--",
-		"--tld",
-		"com",
+	// Register COM TLD
+	cmd = exec.Command("npm", "run", "register", "--",
+		"--tld", "com",
 		"../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json",
 		"//Alice")
 	cmd.Dir = "../../dns_client"
-
-	out, err = cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
+	if err := runCommand(cmd, "register COM TLD"); err != nil {
+		fmt.Printf("Error registering COM TLD: %v\n", err)
 	}
 
-	fmt.Printf("Registered COM TLD. Output: %s\n", out)
-
+	// Register filler TLDs
 	for _, tld := range FILLER_TLDS {
-		fillerCmd := exec.Command("npm",
-			"run",
-			"register",
-			"--",
-			"--tld",
-			tld,
-			"../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json", // Can use any value since this is filler information
+		cmd := exec.Command("npm", "run", "register", "--",
+			"--tld", tld,
+			"../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json",
 			"//Alice")
-		fillerCmd.Dir = "../../dns_client"
+		cmd.Dir = "../../dns_client"
 
-		fillerOut, fillerErr := fillerCmd.CombinedOutput()
-
-		if fillerErr != nil {
-			fmt.Printf("Error executing command: %v\n", fillerErr)
+		if err := runCommand(cmd, "register "+tld+" TLD"); err != nil {
+			fmt.Printf("Error registering %s TLD: %v\n", tld, err)
 		}
-
-		fmt.Printf("Registered %s TLD. Output: %s\n", tld, fillerOut)
 	}
 
-	time.Sleep(time.Millisecond * 10000) // Wait 10 seconds for ledger to stabilize
+	time.Sleep(time.Millisecond * 10000) // Wait 10 seconds
 
-	cmd = exec.Command("npm",
-		"run",
-		"register",
-		"--",
-		"--domain",
-		"example.com",
+	// Register example.com
+	cmd = exec.Command("npm", "run", "register", "--",
+		"--domain", "example.com",
 		"../polkadot-sdk-solochain-template/all_specs/exampleSpec.json",
 		"//Alice")
 	cmd.Dir = "../../dns_client"
-
-	out, err = cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
+	if err := runCommand(cmd, "register example.com"); err != nil {
+		fmt.Printf("Error registering example.com: %v\n", err)
 	}
 
-	fmt.Printf("Registered example network. Output: %s\n", out)
-
-	cmd = exec.Command("npm",
-		"run",
-		"register",
-		"--",
-		"--domain",
-		"whatever.com",
+	// Register whatever.com
+	cmd = exec.Command("npm", "run", "register", "--",
+		"--domain", "whatever.com",
 		"../polkadot-sdk-solochain-template/all_specs/whateverSpec.json",
 		"//Alice")
 	cmd.Dir = "../../dns_client"
-
-	out, err = cmd.CombinedOutput()
-
-	if err != nil {
-		fmt.Printf("Error executing command: %v\n", err)
+	if err := runCommand(cmd, "register whatever.com"); err != nil {
+		fmt.Printf("Error registering whatever.com: %v\n", err)
 	}
 
-	fmt.Printf("Registered whatever network. Output: %s\n", out)
-
+	// Register filler targets
 	for _, target := range FILLER_TARGETS {
-		fillerCmd := exec.Command("npm",
-			"run",
-			"register",
-			"--",
-			"--domain",
-			target+".com",
-			"../polkadot-sdk-solochain-template/all_specs/exampleSpec.json", // Can use any value since this is filler information
+		cmd := exec.Command("npm", "run", "register", "--",
+			"--domain", target+".com",
+			"../polkadot-sdk-solochain-template/all_specs/exampleSpec.json",
 			"//Alice")
-		fillerCmd.Dir = "../../dns_client"
+		cmd.Dir = "../../dns_client"
 
-		out, err = fillerCmd.CombinedOutput()
-
-		if err != nil {
-			fmt.Printf("Error executing command: %v\n", err)
+		if err := runCommand(cmd, "register "+target+".com"); err != nil {
+			fmt.Printf("Error registering %s.com: %v\n", target, err)
 		}
-
-		fmt.Printf("Registered %s network. Output: %s\n", target, out)
 	}
 
-	time.Sleep(time.Millisecond * 10000) // Wait 10 seconds for ledger to stabilize
+	time.Sleep(time.Millisecond * 10000) // Wait 10 seconds
 }
 
 func main() {

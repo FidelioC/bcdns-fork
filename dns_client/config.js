@@ -1,1 +1,1 @@
-exports.ROOT_DNS_NETWORK_SPEC_ADDR = `../polkadot-sdk-solochain-template/all_specs/rootSpec.json`;
+exports.ROOT_DNS_NETWORK_SPEC_ADDR = process.env.ROOT_SPEC_PATH || `../polkadot-sdk-solochain-template/all_specs/rootSpec.json`;

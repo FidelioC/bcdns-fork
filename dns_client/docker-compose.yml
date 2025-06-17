@@ -6,22 +6,42 @@ services:
     environment:
       - BCDNS_MODE=web
       - BCDNS_WEB_PORT=3000
+      - ROOT_SPEC_PATH=/app/specs/rootSpec.json
     ports:
       - "3000:3000"
+    volumes:
+      - ../polkadot-sdk-solochain-template/all_specs:/app/specs
     restart: unless-stopped
+    network_mode: "host"
 
   bcdns-cli:
     build: .
     environment:
       - BCDNS_MODE=cli
+      - ROOT_SPEC_PATH=/app/specs/rootSpec.json
+    volumes:
+      - ../polkadot-sdk-solochain-template/all_specs:/app/specs
     stdin_open: true # docker run -i
     tty: true       # docker run -t
+    network_mode: "host"
 
   bcdns-onetime:
     build: .
     environment:
       - BCDNS_MODE=onetime
+      - ROOT_SPEC_PATH=/app/specs/rootSpec.json
+    volumes:
+      - ../polkadot-sdk-solochain-template/all_specs:/app/specs
     # Override the default command to allow passing arguments
     entrypoint: ["npm", "start", "--"]
     # Default command (can be overridden via command line)
     command: ["domain", "example.com"]
+    network_mode: "host"
+    
+  bcdns-register:
+    build: .
+    environment:
+      - ROOT_SPEC_PATH=/app/specs/rootSpec.json
+    volumes:
+      - ../polkadot-sdk-solochain-template/all_specs:/app/specs
+    network_mode: "host"

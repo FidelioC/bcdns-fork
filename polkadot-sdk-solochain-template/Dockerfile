@@ -1,4 +1,4 @@
-FROM rust:1.78.0
+FROM ubuntu:24.04
 
 ENV RUST_BACKTRACE 1
 
@@ -11,7 +11,7 @@ RUN apt-get update
 RUN apt-get install -y autoconf automake libtool curl make g++ unzip clang
 RUN apt-get install -y protobuf-compiler
 
-RUN useradd -m -u 1000 -U -s /bin/sh -d /substrate substrate && \
+RUN useradd -m -u 1001 -U -s /bin/sh -d /substrate substrate && \
 	mkdir -p /data /substrate/.local/share/substrate && \
 	chown -R substrate:substrate /data && \
 	ln -s /data /substrate/.local/share/substrate && \

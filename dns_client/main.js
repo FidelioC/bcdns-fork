@@ -21,9 +21,9 @@ const runOneTime = async () => {
 
     let result;
     if (type === 'domain') {
-        result = resolver.resolve(value);
+        result = await resolver.resolve(value);
     } else if (type === 'asset') {
-        result = resolver.resolveAsset(value);
+        result = await resolver.resolveAsset(value);
     } else {
         console.error('Type must be either "domain" or "asset"');
         process.exit(1);

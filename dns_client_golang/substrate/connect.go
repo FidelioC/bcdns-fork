@@ -50,8 +50,14 @@ var (
 
 // NewSubstrateConnector creates and initializes a new SubstrateConnector.
 func NewSubstrateConnector(useCache bool) *SubstrateConnector {
+	// Get rootSpecSource from environment variable or use default
+	rootSpecSource := os.Getenv("ROOT_SPEC_SOURCE")
+	if rootSpecSource == "" {
+		rootSpecSource = "../polkadot-sdk-solochain-template/all_specs/rootSpec.json"
+	}
+
 	connector := &SubstrateConnector{
-		rootSpecSource:    os.Getenv("ROOT_SPEC_SOURCE"),
+		rootSpecSource:    rootSpecSource,
 		apiCache:          make(map[string]*gsrpc.SubstrateAPI),
 		rootBootnodeIndex: 0,
 		tldBootnodeIndex:  make(map[string]int),

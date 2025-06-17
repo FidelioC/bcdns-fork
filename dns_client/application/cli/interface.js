@@ -61,14 +61,21 @@ class CLIInterface {
                             console.log('Please provide a domain name');
                             continue;
                         }
-                        this.printResult(this.resolver.resolve(input));
+                        this.printResult(await this.resolver.resolve(input));
                         break;
                     case 'asset':
                         if (!input) {
                             console.log('Please provide an asset name');
                             continue;
                         }
-                        this.printResult(this.resolver.resolveAsset(input));
+                        // Format the input as domain.tld/asset/assetId
+                        const parts = input.split('/');
+                        if (parts.length !== 2) {
+                            console.log('Asset format should be: domain.tld/assetId');
+                            continue;
+                        }
+                        const formattedInput = `${parts[0]}/asset/${parts[1]}`;
+                        this.printResult(await this.resolver.resolve(formattedInput));
                         break;
                     default:
                         console.log('Unknown command. Available commands: domain, asset, exit');
