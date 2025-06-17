@@ -13,6 +13,7 @@ func DomainResolution(domainName string) {
 
 	// Resolve a domain
 	domain := domainName
+	fmt.Println("Resolving Domain")
 	chainSpec, err := connector.ResolveDomain(domain, true)
 	if err != nil {
 		log.Fatalf("Error resolving domain: %v", err)
