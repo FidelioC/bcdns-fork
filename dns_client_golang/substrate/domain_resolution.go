@@ -1,15 +1,13 @@
-package utils
+package substrate
 
 import (
 	"fmt"
 	"log"
-
-	"github.com/khalidzahra/dns_client/substrate"
 )
 
 func DomainResolution(domainName string) {
 	// Initialize the SubstrateConnector
-	connector := substrate.NewSubstrateConnector(false)
+	connector := NewSubstrateConnector(false)
 
 	// Resolve a domain
 	domain := domainName

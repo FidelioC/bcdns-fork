@@ -13,7 +13,7 @@ import (
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ma "github.com/multiformats/go-multiaddr" //https://github.com/multiformats/multiaddr
 
-	"github.com/FidelioC/verifying_network/utils"
+	"github.com/khalidzahra/dns_client/substrate"
 )
 
 // topic name should always be the same for all nodes in the verifying network
@@ -131,5 +131,6 @@ func main() {
 	// 	time.Sleep(100 * time.Millisecond)
 	// }
 
-	utils.DomainResolution("example.com");
+	// utils.DomainResolution("example.com");
+	substrate.DomainResolution("example.com")
 }
