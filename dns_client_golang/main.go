@@ -132,5 +132,6 @@ func main() {
 	}
 
 	// create the verifying network here
-	fmt.Printf("%+v\n", target)
+	fmt.Println("TEST TARGET")
+	fmt.Printf("\n%+v\n", target)
 }
