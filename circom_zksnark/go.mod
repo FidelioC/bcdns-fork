@@ -11,7 +11,7 @@ require (
 	github.com/multiformats/go-multiaddr v0.16.0
 )
 
-replace github.com/khalidzahra/dns_client => ../../dns_client_golang
+replace github.com/khalidzahra/dns_client => ../dns_client_golang
 
 require (
 	github.com/ChainSafe/go-schnorrkel v1.0.0 // indirect

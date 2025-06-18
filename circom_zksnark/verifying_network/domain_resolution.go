@@ -1,13 +1,15 @@
-package substrate
+package verifying_network
 
 import (
 	"fmt"
 	"log"
+
+	"github.com/khalidzahra/dns_client/substrate"
 )
 
 func DomainResolution(domainName string) {
 	// Initialize the SubstrateConnector
-	connector := NewSubstrateConnector(false)
+	connector := substrate.NewSubstrateConnector(false)
 
 	// Resolve a domain
 	domain := domainName
