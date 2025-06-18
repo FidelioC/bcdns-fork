@@ -131,7 +131,14 @@ func main() {
 		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
 	}
 
-	// create the verifying network here
+	// 1) create verifying network
 	fmt.Println("TEST TARGET")
 	fmt.Printf("\n%+v\n", target)
+
+	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
+		// here, the verifying network will do logics to verify the boot nodes metadata
+
+	// 3) verifying network return result back to client 
+
+	// 4) close verifying network
 }
