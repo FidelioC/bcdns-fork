@@ -103,6 +103,7 @@ listenerLoop:
 }
 
 func main() {
+	substrate.DomainResolution("example.com")
 	// Command line args
 	var eval, assetEval, listen, useCache bool
 	var runs, runsPerSecond int
