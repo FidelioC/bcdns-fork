@@ -62,7 +62,7 @@ func TestFetchSingleSpec(t *testing.T) {
 			}
 
 			// Call the function under test
-			idx, duration := fetchSingleSpec(tc.domain, tc.idx, mockConnector, tc.evalFlag, false)
+			idx, duration, _ := fetchSingleSpec(tc.domain, tc.idx, mockConnector, tc.evalFlag, false)
 
 			// Verify results
 			if idx != tc.idx {

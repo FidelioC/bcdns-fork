@@ -12,7 +12,7 @@ import (
 	"github.com/khalidzahra/dns_client/substrate"
 )
 
-func fetchSingleSpec(domain string, idx int, connector substrate.SubstrateInterface, eval, prefetch bool) (int, int64) {
+func fetchSingleSpec(domain string, idx int, connector substrate.SubstrateInterface, eval, prefetch bool) (int, int64, *substrate.ChainSpecRes) {
 	start := time.Now()
 	target, err := connector.ResolveDomain(domain, eval)
 	if err != nil {
@@ -25,21 +25,26 @@ func fetchSingleSpec(domain string, idx int, connector substrate.SubstrateInterf
 		fmt.Println("================================================================")
 		fmt.Printf("%+v\n", target)
 	}
-	return idx, duration
+	return idx, duration, target
 }
 
-func fetchSpec(domain string, runs, runsPerSecond int, outFile string, evalFlag, useCache bool) {
+func fetchSpec(domain string, runs, runsPerSecond int, outFile string, evalFlag, useCache bool) (*substrate.ChainSpecRes) {
 	resultChan := make(chan *eval.EvalResult)
 	var resultArr []*eval.EvalResult
-
+	var finalTarget *substrate.ChainSpecRes
 	connector := substrate.NewSubstrateConnector(useCache)
 
 	for i := 0; i < 32; i++ { // pre-fetch for caching
-		_, _ = fetchSingleSpec(domain, i, connector, evalFlag, true)
+		_, _, _ = fetchSingleSpec(domain, i, connector, evalFlag, true)
 	}
 
+	var once sync.Once 
+
 	eval.RunFuncPerSecond(func(currentRun int, wg *sync.WaitGroup) {
-		idx, time := fetchSingleSpec(domain, currentRun, connector, evalFlag, false)
+		idx, time, target := fetchSingleSpec(domain, currentRun, connector, evalFlag, false)
+		once.Do(func() { // store only the first valid target
+			finalTarget = target
+		})
 		wg.Done()
 		resultChan <- &eval.EvalResult{Idx: idx, Time: time}
 	}, runs, runsPerSecond)
@@ -52,7 +57,7 @@ func fetchSpec(domain string, runs, runsPerSecond int, outFile string, evalFlag,
 
 		eval.WriteToCSV(outFile, resultArr)
 	}
-
+	return finalTarget
 }
 
 func registerAssets(domain, outFile string, rps, totalRuns int) {
@@ -107,6 +112,7 @@ func main() {
 	var eval, assetEval, listen, useCache bool
 	var runs, runsPerSecond int
 	var domain, outFile string
+	var target *substrate.ChainSpecRes
 	flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
 	flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
 	flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
@@ -122,6 +128,9 @@ func main() {
 	} else if listen {
 		listenToEvents(runs, outFile, useCache)
 	} else {
-		fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
+		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
 	}
+
+	// create the verifying network here
+	fmt.Printf("%+v\n", target)
 }
