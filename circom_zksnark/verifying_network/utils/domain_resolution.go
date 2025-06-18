@@ -9,12 +9,12 @@ import (
 
 func DomainResolution(domainName string) {
 	// Initialize the SubstrateConnector
-	connector := substrate.NewSubstrateConnector(true)
+	connector := substrate.NewSubstrateConnector(false)
 
 	// Resolve a domain
 	domain := domainName
 	fmt.Println("Resolving Domain")
-	chainSpec, err := connector.ResolveDomain(domain, true)
+	chainSpec, err := connector.ResolveDomain(domain, false)
 	if err != nil {
 		log.Fatalf("Error resolving domain: %v", err)
 	}
