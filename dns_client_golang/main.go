@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"strings"
@@ -137,7 +138,11 @@ func main() {
 
 	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
 		// here, the verifying network will do logics to verify the boot nodes metadata
-	verifying_network.RunSingleVerifier("")
+	nodes := verifying_network.CreateVerifierNetwork(3)
+
+	nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
+
+	select{} // prevent main from exiting
 
 	// 3) verifying network return result back to client 
 
