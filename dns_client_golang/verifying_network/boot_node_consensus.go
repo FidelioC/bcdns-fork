@@ -1,13 +1,16 @@
-package main
+package verifying_network
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"log"
+	"os"
+	"strings"
+	"time"
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 
-	"github.com/FidelioC/verifying_network/verifying_network"
 	libp2p "github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	host "github.com/libp2p/go-libp2p/core/host"
@@ -108,28 +111,21 @@ func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
 	}
 }
 
-func main() {
-	// bootstrap := ""
-	// if len(os.Args) >= 2 {
-	// 	bootstrap = strings.TrimSpace(os.Args[1])
-	// }
+func RunSingleVerifier(bootstrap string){
+	ctx := context.Background()
+	vn := NewVerifierNode(ctx, bootstrap)
+	vn.PrintHostInfo()
+	vn.ListenForMessages(ctx)
 
-	// ctx := context.Background()
-	// vn := NewVerifierNode(ctx, bootstrap)
-	// vn.PrintHostInfo()
-	// vn.ListenForMessages(ctx)
-
-	// // Simple CLI loop to send messages to other nodes
-	// scanner := bufio.NewScanner(os.Stdin)
-	// fmt.Println("Type messages to send to other nodes:")
-	// for scanner.Scan() {
-	// 	text := scanner.Text()
-	// 	if strings.TrimSpace(text) == "" {
-	// 		continue
-	// 	}
-	// 	vn.SendMessage(ctx, fmt.Sprintf("%s: %s", vn.host.ID().ShortString(), text))
-	// 	time.Sleep(100 * time.Millisecond)
-	// }
-
-	verifying_network.DomainResolution("example.com");
+	// Simple CLI loop to send messages to other nodes
+	scanner := bufio.NewScanner(os.Stdin)
+	fmt.Println("Type messages to send to other nodes:")
+	for scanner.Scan() {
+		text := scanner.Text()
+		if strings.TrimSpace(text) == "" {
+			continue
+		}
+		vn.SendMessage(ctx, fmt.Sprintf("%s: %s", vn.host.ID().ShortString(), text))
+		time.Sleep(100 * time.Millisecond)
+	}
 }
