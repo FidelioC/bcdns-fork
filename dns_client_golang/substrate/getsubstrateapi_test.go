@@ -23,7 +23,7 @@ func TestGetSubstrateApi(t *testing.T) {
 	connector := NewSubstrateConnector(false)
 
 	// Call the function
-	api, err := connector.getSubstrateApi(spec, 0)
+	api, err := connector.GetSubstrateApi(spec, 0)
 	if err != nil {
 		t.Fatal("Failed to get Substrate API:", err)
 	}

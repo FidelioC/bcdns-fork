@@ -69,7 +69,7 @@ func NewSubstrateConnector(useCache bool) *SubstrateConnector {
 	// Set default function implementations
 	connector.getTldFromRootFunc = connector.getTldFromRoot
 	connector.getTargetFromTldFunc = connector.getTargetFromTld
-	connector.getSubstrateApiFunc = connector.getSubstrateApi
+	connector.getSubstrateApiFunc = connector.GetSubstrateApi
 
 	return connector
 }
@@ -145,7 +145,7 @@ func (c *SubstrateConnector) resolveTargetSpec(tldSpec ChainSpecRes, domain stri
 }
 
 // getSubstrateApi retrieves or creates a Substrate API instance for a specific chain spec and bootnode index.
-func (c *SubstrateConnector) getSubstrateApi(spec ChainSpecRes, bootNodeIndex int) (*gsrpc.SubstrateAPI, error) {
+func (c *SubstrateConnector) GetSubstrateApi(spec ChainSpecRes, bootNodeIndex int) (*gsrpc.SubstrateAPI, error) {
 	c.m.Lock()
 	cacheKey := fmt.Sprintf("%s-%d", spec.Id, bootNodeIndex)
 	api, ok := c.apiCache[cacheKey]

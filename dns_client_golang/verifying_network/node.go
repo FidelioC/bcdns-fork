@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 
@@ -119,3 +120,70 @@ func ChainSpecToJson(target *substrate.ChainSpecRes) (string, error) {
     return string(jsonBytes), nil
 }
 
+func (vn *VerifierNode) ConnectBootNode(target_json string, boot_index int){
+	// Load spec from JSON
+	data, err := os.ReadFile("../../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json")
+	if err != nil {
+		fmt.Println("Failed to read spec JSON:", err)
+		panic(err)
+	}
+
+	var spec substrate.ChainSpecRes
+	err = json.Unmarshal(data, &spec)
+	if err != nil {
+		fmt.Println("Failed to unmarshal spec JSON:", err)
+		panic(err)
+	}
+
+	// Initialize connector with no cache (for clean testing)
+	connector := substrate.NewSubstrateConnector(false)
+
+	// Call the function
+	api, err := connector.GetSubstrateApi(spec, boot_index)
+	if err != nil {
+		fmt.Println("Failed to get Substrate API:", err)
+		panic(err)
+	}
+
+	// System info
+	chainName, err := api.RPC.System.Chain()
+	if err != nil {
+		fmt.Printf("Failed to get chain name: %v\n", err)
+		panic(err)
+	}
+
+	nodeName, err := api.RPC.System.Name()
+	if err != nil {
+		fmt.Printf("Failed to get node name: %v\n", err)
+		panic(err)
+	}
+
+	nodeVersion, err := api.RPC.System.Version()
+	if err != nil {
+		fmt.Printf("Failed to get node version: %v\n", err)
+		panic(err)
+	}
+
+	nodePeers, err := api.RPC.System.Peers()
+	if err != nil {
+		fmt.Printf("Failed to get peers: %v\n", err)
+		panic(err)
+	}
+
+	blockHash, err := api.RPC.Chain.GetBlockHashLatest()
+	if err != nil {
+		fmt.Printf("Failed to get latest block hash: %v\n", err)
+		panic(err)
+	}
+
+	fmt.Println("Successfully connected to Substrate API")
+	fmt.Printf("Chain: %s\n", chainName)
+	fmt.Printf("Node: %s\n", nodeName)
+	fmt.Printf("Version: %s\n", nodeVersion)
+	fmt.Printf("Latest block hash: %v\n", blockHash)
+
+	fmt.Printf("Connected peers: %d\n", len(nodePeers))
+	for i, peer := range nodePeers {
+		fmt.Printf("Peer %d ID: %s, Role: %s", i+1, peer.PeerID, peer.Roles)
+	}
+}
