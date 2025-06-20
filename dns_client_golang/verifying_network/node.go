@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 
@@ -121,17 +120,10 @@ func ChainSpecToJson(target *substrate.ChainSpecRes) (string, error) {
 }
 
 func (vn *VerifierNode) ConnectBootNode(target_json string, boot_index int){
-	// Load spec from JSON
-	data, err := os.ReadFile("../../polkadot-sdk-solochain-template/all_specs/com_tldSpec.json")
-	if err != nil {
-		fmt.Println("Failed to read spec JSON:", err)
-		panic(err)
-	}
-
 	var spec substrate.ChainSpecRes
-	err = json.Unmarshal(data, &spec)
+	err := json.Unmarshal([]byte(target_json), &spec)
 	if err != nil {
-		fmt.Println("Failed to unmarshal spec JSON:", err)
+		fmt.Println("Failed to unmarshal target JSON:", err)
 		panic(err)
 	}
 
