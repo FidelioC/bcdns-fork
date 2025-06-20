@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"strconv"
 	"strings"
@@ -109,32 +110,32 @@ listenerLoop:
 }
 
 func main() {
-	// // Command line args
-	// var eval, assetEval, listen, useCache bool
-	// var runs, runsPerSecond int
-	// var domain, outFile string
-	// var target *substrate.ChainSpecRes
-	// flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
-	// flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
-	// flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
-	// flag.BoolVar(&assetEval, "assetEval", false, "Evaluate asset registration performance by running multiple times")
-	// flag.BoolVar(&listen, "listen", false, "Listen to events emitted by the chain")
-	// flag.BoolVar(&useCache, "useCache", false, "Use caching for interacting with the chain")
-	// flag.IntVar(&runs, "runs", 1, "Number of runs for evaluation")
-	// flag.IntVar(&runsPerSecond, "rps", 1, "Number of runs per second for evaluation")
-	// flag.Parse()
+	// Command line args
+	var eval, assetEval, listen, useCache bool
+	var runs, runsPerSecond int
+	var domain, outFile string
+	var target *substrate.ChainSpecRes
+	flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
+	flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
+	flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
+	flag.BoolVar(&assetEval, "assetEval", false, "Evaluate asset registration performance by running multiple times")
+	flag.BoolVar(&listen, "listen", false, "Listen to events emitted by the chain")
+	flag.BoolVar(&useCache, "useCache", false, "Use caching for interacting with the chain")
+	flag.IntVar(&runs, "runs", 1, "Number of runs for evaluation")
+	flag.IntVar(&runsPerSecond, "rps", 1, "Number of runs per second for evaluation")
+	flag.Parse()
 
-	// if assetEval {
-	// 	registerAssets(domain, outFile, runsPerSecond, runs)
-	// } else if listen {
-	// 	listenToEvents(runs, outFile, useCache)
-	// } else {
-	// 	target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
-	// }
+	if assetEval {
+		registerAssets(domain, outFile, runsPerSecond, runs)
+	} else if listen {
+		listenToEvents(runs, outFile, useCache)
+	} else {
+		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
+	}
 
-	// // 1) create verifying network
-	// fmt.Println("TEST TARGET")
-	// fmt.Printf("\n%+v\n", target)
+	// 1) create verifying network
+	fmt.Println("TEST TARGET")
+	fmt.Printf("\n%+v\n", target)
 
 	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
 		// here, the verifying network will do logics to verify the boot nodes metadata
