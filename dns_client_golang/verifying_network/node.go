@@ -2,11 +2,13 @@ package verifying_network
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 
+	"github.com/khalidzahra/dns_client/substrate"
 	libp2p "github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
 	host "github.com/libp2p/go-libp2p/core/host"
@@ -106,3 +108,14 @@ func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
 		log.Println("Error publishing message:", err)
 	}
 }
+
+func ChainSpecToJson(target *substrate.ChainSpecRes) (string, error) {
+    jsonBytes, err := json.MarshalIndent(target, "", "  ")
+    if err != nil {
+        fmt.Println("Error marshaling JSON:", err)
+        return "", err // return empty string if error
+    }
+
+    return string(jsonBytes), nil
+}
+

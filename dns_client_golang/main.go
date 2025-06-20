@@ -136,7 +136,11 @@ func main() {
 	// 1) create verifying network
 	fmt.Println("TEST TARGET")
 	fmt.Printf("\n%+v\n", target)
-
+	json_target, err := verifying_network.ChainSpecToJson(target)
+	if err != nil{
+		panic(err)
+	}
+	fmt.Printf("json_target: %s", json_target)
 	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
 		// here, the verifying network will do logics to verify the boot nodes metadata
 	nodes := verifying_network.CreateVerifierNetwork(3)
