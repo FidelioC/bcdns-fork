@@ -176,6 +176,6 @@ func (vn *VerifierNode) ConnectBootNode(target_json string, boot_index int){
 
 	fmt.Printf("Connected peers: %d\n", len(nodePeers))
 	for i, peer := range nodePeers {
-		fmt.Printf("Peer %d ID: %s, Role: %s", i+1, peer.PeerID, peer.Roles)
+		fmt.Printf("Peer %d ID: %s, Role: %s\n", i+1, peer.PeerID, peer.Roles)
 	}
 }
