@@ -8,6 +8,7 @@ import (
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 
+	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/khalidzahra/dns_client/substrate"
 	libp2p "github.com/libp2p/go-libp2p"
 	pubsub "github.com/libp2p/go-libp2p-pubsub"
@@ -16,6 +17,17 @@ import (
 	peerstore "github.com/libp2p/go-libp2p/core/peerstore"
 	ma "github.com/multiformats/go-multiaddr" //https://github.com/multiformats/multiaddr
 )
+
+type VerificationResult struct {
+	NodeID      string `json:"nodeId"`
+	ChainName   string `json:"chainName"`
+	NodeName    string `json:"nodeName"`
+	Version     string `json:"version"`
+	BlockHash   string `json:"blockHash"`
+	BootIndex   int    `json:"bootIndex"`
+	IsSuccess   bool   `json:"isSuccess"`
+	ErrorMsg    string `json:"errorMsg,omitempty"`
+}
 
 // topic name should always be the same for all nodes in the verifying network
 const TopicName = "verifying-network" 
@@ -119,63 +131,58 @@ func ChainSpecToJson(target *substrate.ChainSpecRes) (string, error) {
     return string(jsonBytes), nil
 }
 
-func (vn *VerifierNode) ConnectBootNode(target_json string, boot_index int){
+func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, bootIndex int) {
 	var spec substrate.ChainSpecRes
-	err := json.Unmarshal([]byte(target_json), &spec)
+	err := json.Unmarshal([]byte(targetJSON), &spec)
 	if err != nil {
-		fmt.Println("Failed to unmarshal target JSON:", err)
-		panic(err)
+		log.Println("Failed to unmarshal target JSON:", err)
+		return
 	}
 
-	// Initialize connector with no cache (for clean testing)
 	connector := substrate.NewSubstrateConnector(false)
 
-	// Call the function
-	api, err := connector.GetSubstrateApi(spec, boot_index)
+	api, err := connector.GetSubstrateApi(spec, bootIndex)
+	result := VerificationResult{
+		NodeID:    vn.host.ID().String(),
+		BootIndex: bootIndex,
+		IsSuccess: true, // assume success, set to false on any failure
+	}
+
 	if err != nil {
-		fmt.Println("Failed to get Substrate API:", err)
-		panic(err)
+		result.ErrorMsg = fmt.Sprintf("API connection failed: %v", err)
+		result.IsSuccess = false
+	} else {
+		// try to get metadata
+		result_chain, err1 := api.RPC.System.Chain()
+		result_nodename, err2 := api.RPC.System.Name()
+		result_version, err3 := api.RPC.System.Version()
+		blockHash, err4 := api.RPC.Chain.GetBlockHashLatest()
+
+		// if any error occurs, mark failure
+		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
+			result.IsSuccess = false
+			result.ErrorMsg = fmt.Sprintf("Metadata fetch errors: Chain=%v, Name=%v, Version=%v, BlockHash=%v",
+				err1, err2, err3, err4)
+		} else {
+			// populate result
+			result.ChainName = convertTextToString(result_chain)
+			result.NodeName = convertTextToString(result_nodename)
+			result.Version = convertTextToString(result_version)
+			result.BlockHash = blockHash.Hex()
+		}
 	}
 
-	// System info
-	chainName, err := api.RPC.System.Chain()
+	// Broadcast result
+	resultJSON, err := json.Marshal(result)
 	if err != nil {
-		fmt.Printf("Failed to get chain name: %v\n", err)
-		panic(err)
+		log.Println("Failed to marshal verification result:", err)
+		return
 	}
 
-	nodeName, err := api.RPC.System.Name()
-	if err != nil {
-		fmt.Printf("Failed to get node name: %v\n", err)
-		panic(err)
-	}
+	vn.SendMessage(ctx, string(resultJSON))
+}
 
-	nodeVersion, err := api.RPC.System.Version()
-	if err != nil {
-		fmt.Printf("Failed to get node version: %v\n", err)
-		panic(err)
-	}
 
-	nodePeers, err := api.RPC.System.Peers()
-	if err != nil {
-		fmt.Printf("Failed to get peers: %v\n", err)
-		panic(err)
-	}
-
-	blockHash, err := api.RPC.Chain.GetBlockHashLatest()
-	if err != nil {
-		fmt.Printf("Failed to get latest block hash: %v\n", err)
-		panic(err)
-	}
-
-	fmt.Println("Successfully connected to Substrate API")
-	fmt.Printf("Chain: %s\n", chainName)
-	fmt.Printf("Node: %s\n", nodeName)
-	fmt.Printf("Version: %s\n", nodeVersion)
-	fmt.Printf("Latest block hash: %v\n", blockHash)
-
-	fmt.Printf("Connected peers: %d\n", len(nodePeers))
-	for i, peer := range nodePeers {
-		fmt.Printf("Peer %d ID: %s, Role: %s\n", i+1, peer.PeerID, peer.Roles)
-	}
+func convertTextToString(text types.Text) string{
+	return string(text)
 }
