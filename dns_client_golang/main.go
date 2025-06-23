@@ -147,6 +147,10 @@ func main() {
 
 	nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
 	nodes[0].ConnectBootNode(json_target, 0)
+	fmt.Println()
+	nodes[0].ConnectBootNode(json_target, 1)
+	fmt.Println()
+	nodes[0].ConnectBootNode(json_target, 2)
 	select{} // prevent main from exiting
 
 	// 3) verifying network return result back to client 
