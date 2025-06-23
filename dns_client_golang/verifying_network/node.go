@@ -100,19 +100,30 @@ func (vn *VerifierNode) PrintHostInfo() {
 }
 
 func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
-	go func() { // go routine, to make it able to run concurrently with the rest of the program
+	go func() {
 		for {
 			msg, err := vn.sub.Next(ctx)
-			if msg.ReceivedFrom != vn.host.ID(){ // ignore messages coming from itself
-				if err != nil {
-					log.Println("Error reading from subscription:", err)
-					continue
-				}
-				fmt.Printf("Received: %s\n", string(msg.Data))
-			}	
+			if err != nil {
+				log.Println("Error reading message:", err)
+				continue
+			}
+			if msg.ReceivedFrom == vn.host.ID() {
+				continue
+			}
+
+			var result VerificationResult
+			err = json.Unmarshal(msg.Data, &result)
+			if err == nil {
+				fmt.Printf("[Node %s] Received verification from %s: %v\n",
+					vn.host.ID().ShortString(), result.NodeID, result)
+				// TODO: Save to shared state / do consensus check here
+			} else {
+				fmt.Printf("Received non-verification message: %s\n", string(msg.Data))
+			}
 		}
 	}()
 }
+
 
 func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
 	err := vn.topic.Publish(ctx, []byte(message))
