@@ -144,13 +144,13 @@ func main() {
 	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
 		// here, the verifying network will do logics to verify the boot nodes metadata
 	nodes := verifying_network.CreateVerifierNetwork(3)
-
+	
 	nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
 	nodes[0].ConnectBootNode(json_target, 0)
 	fmt.Println()
-	nodes[0].ConnectBootNode(json_target, 1)
+	nodes[1].ConnectBootNode(json_target, 0)
 	fmt.Println()
-	nodes[0].ConnectBootNode(json_target, 2)
+	nodes[2].ConnectBootNode(json_target, 0)
 	select{} // prevent main from exiting
 
 	// 3) verifying network return result back to client 
