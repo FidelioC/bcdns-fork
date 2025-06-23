@@ -114,15 +114,20 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 			var result VerificationResult
 			err = json.Unmarshal(msg.Data, &result)
 			if err == nil {
-				fmt.Printf("[Node %s] Received verification from %s: %v\n",
-					vn.host.ID().ShortString(), result.NodeID, result)
-				// TODO: Save to shared state / do consensus check here
+				jsonPretty, err := json.MarshalIndent(result, "", "  ")
+				if err == nil {
+					fmt.Printf("[Node %s] Received verification from %s:\n%s\n",
+						vn.host.ID().ShortString(), result.NodeID, string(jsonPretty))
+				} else {
+					fmt.Printf("Received result from %s, but failed to format JSON: %v\n", result.NodeID, err)
+				}
 			} else {
 				fmt.Printf("Received non-verification message: %s\n", string(msg.Data))
 			}
 		}
 	}()
 }
+
 
 
 func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {

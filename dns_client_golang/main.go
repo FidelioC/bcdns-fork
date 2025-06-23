@@ -146,10 +146,9 @@ func main() {
 	nodes := verifying_network.CreateVerifierNetwork(3)
 	
 	nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
+	fmt.Println()
 	nodes[0].ConnectBootNode(context.Background(), json_target, 0)
-	fmt.Println()
 	nodes[1].ConnectBootNode(context.Background(), json_target, 0)
-	fmt.Println()
 	nodes[2].ConnectBootNode(context.Background(), json_target, 0)
 	select{} // prevent main from exiting
 
