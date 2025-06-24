@@ -153,6 +153,6 @@ func main() {
 	select{} // prevent main from exiting
 
 	// 3) verifying network return result back to client 
-
+	
 	// 4) close verifying network
 }

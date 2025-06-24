@@ -37,6 +37,8 @@ type VerifierNode struct {
 	ps    *pubsub.PubSub
 	topic *pubsub.Topic
 	sub   *pubsub.Subscription
+
+	receivedResults map[string]VerificationResult
 }
 
 func NewVerifierNode(ctx context.Context, bootstrap string) *VerifierNode {
@@ -89,6 +91,7 @@ func NewVerifierNode(ctx context.Context, bootstrap string) *VerifierNode {
 		ps:    pubSub,
 		topic: topic,
 		sub:   subscribe,
+		receivedResults: make(map[string]VerificationResult),
 	}
 }
 
@@ -114,12 +117,19 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 			var result VerificationResult
 			err = json.Unmarshal(msg.Data, &result)
 			if err == nil {
+				vn.receivedResults[result.NodeID] = result
+
 				jsonPretty, err := json.MarshalIndent(result, "", "  ")
 				if err == nil {
 					fmt.Printf("[Node %s] Received verification from %s:\n%s\n",
-						vn.host.ID().ShortString(), result.NodeID, string(jsonPretty))
+						vn.host.ID().String(), result.NodeID, string(jsonPretty))
 				} else {
 					fmt.Printf("Received result from %s, but failed to format JSON: %v\n", result.NodeID, err)
+				}
+
+				// Perform consensus check when enough results are collected
+				if len(vn.receivedResults) >= 3 { // You can adjust this threshold
+					vn.CheckConsensus()
 				}
 			} else {
 				fmt.Printf("Received non-verification message: %s\n", string(msg.Data))
@@ -128,6 +138,38 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 	}()
 }
 
+func (vn *VerifierNode) CheckConsensus() {
+	type key struct {
+		ChainName string
+		Version   string
+		BlockHash string
+	}
+
+	counts := make(map[key]int)
+	for _, res := range vn.receivedResults {
+		if res.IsSuccess {
+			k := key{res.ChainName, res.Version, res.BlockHash}
+			counts[k]++
+		}
+	}
+
+	fmt.Println("------ CONSENSUS REPORT ------")
+	var maxCount int
+	var consensusKey key
+	for k, c := range counts {
+		fmt.Printf("Config: %+v | Votes: %d\n", k, c)
+		if c > maxCount {
+			maxCount = c
+			consensusKey = k
+		}
+	}
+
+	if maxCount > len(vn.receivedResults)/2 {
+		fmt.Printf("Consensus achieved: %+v\n", consensusKey)
+	} else {
+		fmt.Println("No consensus reached.")
+	}
+}
 
 
 func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
@@ -197,7 +239,6 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 
 	vn.SendMessage(ctx, string(resultJSON))
 }
-
 
 func convertTextToString(text types.Text) string{
 	return string(text)
