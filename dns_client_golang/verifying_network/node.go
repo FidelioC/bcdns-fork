@@ -123,12 +123,13 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 				if err == nil {
 					fmt.Printf("[Node %s] Received verification from %s:\n%s\n",
 						vn.host.ID().String(), result.NodeID, string(jsonPretty))
+					fmt.Printf("[Node %s] Current received result length: %v", vn.host.ID().String(), len(vn.receivedResults))
 				} else {
 					fmt.Printf("Received result from %s, but failed to format JSON: %v\n", result.NodeID, err)
 				}
 
 				// Perform consensus check when enough results are collected
-				if len(vn.receivedResults) >= 3 { // You can adjust this threshold
+				if len(vn.receivedResults) >= 2 { // You can adjust this threshold
 					vn.CheckConsensus()
 				}
 			} else {
