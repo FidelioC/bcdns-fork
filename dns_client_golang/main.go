@@ -150,9 +150,15 @@ func main() {
 	nodes[0].ConnectBootNode(context.Background(), json_target, 0)
 	nodes[1].ConnectBootNode(context.Background(), json_target, 0)
 	nodes[2].ConnectBootNode(context.Background(), json_target, 0)
-	select{} // prevent main from exiting
-
-	// 3) verifying network return result back to client 
 	
+
+	// 3) verifying network return result back to client
+	for i:=range nodes{
+		fmt.Printf("\n\nConsensus Result %v s: \n", i)
+		fmt.Println(nodes[i].GetConsensusResult())
+	}
 	// 4) close verifying network
+
+
+	select{} // prevent main from exiting
 }

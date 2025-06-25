@@ -32,6 +32,10 @@ type VerificationResult struct {
 // topic name should always be the same for all nodes in the verifying network
 const TopicName = "verifying-network" 
 
+var (
+	consensusAchieved bool = false
+	consensusResult *VerificationResult
+)
 type VerifierNode struct {
 	host  host.Host
 	ps    *pubsub.PubSub
@@ -167,6 +171,7 @@ func (vn *VerifierNode) CheckConsensus() {
 
 	if maxCount > len(vn.receivedResults)/2 {
 		fmt.Printf("Consensus achieved: %+v\n\n", consensusKey)
+		consensusAchieved = true
 	} else {
 		fmt.Println("No consensus reached.")
 	}
@@ -243,4 +248,12 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 
 func convertTextToString(text types.Text) string{
 	return string(text)
+}
+
+func (vn *VerifierNode) GetConsensusResult() (*VerificationResult){
+	if consensusAchieved {
+		return consensusResult
+	} else {
+		return nil
+	}
 }
