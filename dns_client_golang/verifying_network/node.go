@@ -166,7 +166,7 @@ func (vn *VerifierNode) CheckConsensus() {
 	}
 
 	if maxCount > len(vn.receivedResults)/2 {
-		fmt.Printf("Consensus achieved: %+v\n", consensusKey)
+		fmt.Printf("Consensus achieved: %+v\n\n", consensusKey)
 	} else {
 		fmt.Println("No consensus reached.")
 	}
