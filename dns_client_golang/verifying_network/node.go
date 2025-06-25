@@ -154,7 +154,7 @@ func (vn *VerifierNode) CheckConsensus() {
 		}
 	}
 
-	fmt.Printf("------ CONSENSUS REPORT NODE: %s ------", vn.host.ID().String())
+	fmt.Printf("\n\n------ CONSENSUS REPORT NODE: %s ------\n", vn.host.ID().String())
 	var maxCount int
 	var consensusKey key
 	for k, c := range counts {
