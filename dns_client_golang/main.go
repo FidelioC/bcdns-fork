@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"strconv"
@@ -11,7 +10,6 @@ import (
 
 	"github.com/khalidzahra/dns_client/eval"
 	"github.com/khalidzahra/dns_client/substrate"
-	"github.com/khalidzahra/dns_client/verifying_network"
 )
 
 func fetchSingleSpec(domain string, idx int, connector substrate.SubstrateInterface, eval, prefetch bool) (int, int64, *substrate.ChainSpecRes) {
@@ -114,7 +112,7 @@ func main() {
 	var eval, assetEval, listen, useCache bool
 	var runs, runsPerSecond int
 	var domain, outFile string
-	var target *substrate.ChainSpecRes
+	// var target *substrate.ChainSpecRes
 	flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
 	flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
 	flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
@@ -130,27 +128,27 @@ func main() {
 	} else if listen {
 		listenToEvents(runs, outFile, useCache)
 	} else {
-		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
+		fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
 	}
 
-	// 1) create verifying network
-	fmt.Println("TEST TARGET")
-	fmt.Printf("\n%+v\n", target)
-	json_target, err := verifying_network.ChainSpecToJson(target)
-	if err != nil{
-		panic(err)
-	}
-	fmt.Printf("json_target: %s", json_target)
-	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
-		// here, the verifying network will do logics to verify the boot nodes metadata
-	nodes := verifying_network.CreateVerifierNetwork(3)
+	// // 1) create verifying network
+	// fmt.Println("TEST TARGET")
+	// fmt.Printf("\n%+v\n", target)
+	// json_target, err := verifying_network.ChainSpecToJson(target)
+	// if err != nil{
+	// 	panic(err)
+	// }
+	// fmt.Printf("json_target: %s", json_target)
+	// // 2) api call - client have verifying network nodes connect to the target, list of boot nodes
+	// 	// here, the verifying network will do logics to verify the boot nodes metadata
+	// nodes := verifying_network.CreateVerifierNetwork(3)
 	
-	nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
-	fmt.Println()
-	nodes[0].ConnectBootNode(context.Background(), json_target, 0)
-	nodes[1].ConnectBootNode(context.Background(), json_target, 0)
-	nodes[2].ConnectBootNode(context.Background(), json_target, 0)
-	select{} // prevent main from exiting
+	// nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
+	// fmt.Println()
+	// nodes[0].ConnectBootNode(context.Background(), json_target, 0)
+	// nodes[1].ConnectBootNode(context.Background(), json_target, 0)
+	// nodes[2].ConnectBootNode(context.Background(), json_target, 0)
+	// select{} // prevent main from exiting
 
 	// 3) verifying network return result back to client 
 	
