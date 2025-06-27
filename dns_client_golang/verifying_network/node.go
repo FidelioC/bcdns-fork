@@ -179,24 +179,6 @@ func (vn *VerifierNode) CheckConsensus() {
 	}
 }
 
-
-func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
-	err := vn.topic.Publish(ctx, []byte(message))
-	if err != nil {
-		log.Println("Error publishing message:", err)
-	}
-}
-
-func ChainSpecToJson(target *substrate.ChainSpecRes) (string, error) {
-    jsonBytes, err := json.MarshalIndent(target, "", "  ")
-    if err != nil {
-        fmt.Println("Error marshaling JSON:", err)
-        return "", err // return empty string if error
-    }
-
-    return string(jsonBytes), nil
-}
-
 func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, bootIndex int) {
 	var spec substrate.ChainSpecRes
 	err := json.Unmarshal([]byte(targetJSON), &spec)
@@ -262,10 +244,27 @@ func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string
 				return vn.consensusResult
 			}
 		case <-timeoutChan:
-			fmt.Println("Timeout: No consensus achieved")
+			fmt.Printf("Timeout [Node %s] : No consensus achieved\n", vn.host.ID().String())
 			return nil
 		}
 	}
+}
+
+func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
+	err := vn.topic.Publish(ctx, []byte(message))
+	if err != nil {
+		log.Println("Error publishing message:", err)
+	}
+}
+
+func ChainSpecToJson(target *substrate.ChainSpecRes) (string, error) {
+    jsonBytes, err := json.MarshalIndent(target, "", "  ")
+    if err != nil {
+        fmt.Println("Error marshaling JSON:", err)
+        return "", err // return empty string if error
+    }
+
+    return string(jsonBytes), nil
 }
 
 func convertTextToString(text types.Text) string{
