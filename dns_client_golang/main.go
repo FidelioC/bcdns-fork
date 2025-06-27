@@ -145,18 +145,21 @@ func main() {
 		// here, the verifying network will do logics to verify the boot nodes metadata
 	nodes := verifying_network.CreateVerifierNetwork(3)
 	
-	nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
-	fmt.Println()
-	nodes[0].ConnectBootNode(context.Background(), json_target, 0)
-	nodes[1].ConnectBootNode(context.Background(), json_target, 0)
-	nodes[2].ConnectBootNode(context.Background(), json_target, 0)
+	// nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
+	// fmt.Println()
+	// nodes[0].ConnectBootNode(context.Background(), json_target, 0)
+	// nodes[1].ConnectBootNode(context.Background(), json_target, 0)
+	// nodes[2].ConnectBootNode(context.Background(), json_target, 0)
 	
+	for i:=range nodes{
+		nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 5*time.Second)
+	}
 
 	// 3) verifying network return result back to client
-	for i:=range nodes{
-		fmt.Printf("\n\nConsensus Result %v s: \n", i)
-		fmt.Println(nodes[i].GetConsensusResult())
-	}
+	// for i:=range nodes{
+	// 	fmt.Printf("\n\nConsensus Result %v s: \n", i)
+	// 	fmt.Println(nodes[i].GetConsensusResult())
+	// }
 	// 4) close verifying network
 
 

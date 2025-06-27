@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"time"
 
 	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
 
@@ -32,10 +33,6 @@ type VerificationResult struct {
 // topic name should always be the same for all nodes in the verifying network
 const TopicName = "verifying-network" 
 
-var (
-	consensusAchieved bool = false
-	consensusResult *VerificationResult
-)
 type VerifierNode struct {
 	host  host.Host
 	ps    *pubsub.PubSub
@@ -43,7 +40,11 @@ type VerifierNode struct {
 	sub   *pubsub.Subscription
 
 	receivedResults map[string]VerificationResult
+	consensusAchieved bool
+	consensusResult *VerificationResult
 }
+
+
 
 func NewVerifierNode(ctx context.Context, bootstrap string) *VerifierNode {
 	// create the libp2p node (host)
@@ -158,11 +159,9 @@ func (vn *VerifierNode) CheckConsensus() {
 		}
 	}
 
-	fmt.Printf("\n\n------ CONSENSUS REPORT NODE: %s ------\n", vn.host.ID().String())
 	var maxCount int
 	var consensusKey key
 	for k, c := range counts {
-		fmt.Printf("Config: %+v | Votes: %d\n", k, c)
 		if c > maxCount {
 			maxCount = c
 			consensusKey = k
@@ -170,10 +169,13 @@ func (vn *VerifierNode) CheckConsensus() {
 	}
 
 	if maxCount > len(vn.receivedResults)/2 {
-		fmt.Printf("Consensus achieved: %+v\n\n", consensusKey)
-		consensusAchieved = true
-	} else {
-		fmt.Println("No consensus reached.")
+		vn.consensusAchieved = true
+		for _, res := range vn.receivedResults {
+			if res.ChainName == consensusKey.ChainName && res.Version == consensusKey.Version && res.BlockHash == consensusKey.BlockHash {
+				vn.consensusResult = &res
+				break
+			}
+		}
 	}
 }
 
@@ -246,13 +248,33 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 	vn.SendMessage(ctx, string(resultJSON))
 }
 
+func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string, bootIndex int, timeout time.Duration) *VerificationResult {
+	vn.ConnectBootNode(ctx, targetJSON, bootIndex)
+
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	timeoutChan := time.After(timeout)
+
+	for {
+		select {
+		case <-ticker.C:
+			if vn.consensusResult != nil {
+				return vn.consensusResult
+			}
+		case <-timeoutChan:
+			fmt.Println("Timeout: No consensus achieved")
+			return nil
+		}
+	}
+}
+
 func convertTextToString(text types.Text) string{
 	return string(text)
 }
 
 func (vn *VerifierNode) GetConsensusResult() (*VerificationResult){
-	if consensusAchieved {
-		return consensusResult
+	if vn.consensusAchieved {
+		return vn.consensusResult
 	} else {
 		return nil
 	}
