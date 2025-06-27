@@ -152,7 +152,8 @@ func main() {
 	// nodes[2].ConnectBootNode(context.Background(), json_target, 0)
 	
 	for i:=range nodes{
-		nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 5*time.Second)
+		fmt.Printf("Result %v:\n", i)
+		fmt.Println(nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 5*time.Second))
 	}
 
 	// 3) verifying network return result back to client
