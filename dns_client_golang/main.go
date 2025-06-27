@@ -150,12 +150,19 @@ func main() {
 	// nodes[0].ConnectBootNode(context.Background(), json_target, 0)
 	// nodes[1].ConnectBootNode(context.Background(), json_target, 0)
 	// nodes[2].ConnectBootNode(context.Background(), json_target, 0)
-	
-	for i:=range nodes{
-		fmt.Printf("Result %v:\n", i)
-		fmt.Println(nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 30*time.Second))
+	resultsChan := make(chan *verifying_network.VerificationResult, len(nodes))
+	for i := range nodes {
+		go func(i int) {
+			res := nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 30*time.Second)
+			resultsChan <- res
+		}(i)
 	}
 
+	for i := 0; i < len(nodes); i++ {
+		res := <-resultsChan
+		fmt.Printf("Result %d:\n%+v\n", i, res)
+	}
+	
 	// 3) verifying network return result back to client
 	// for i:=range nodes{
 	// 	fmt.Printf("\n\nConsensus Result %v s: \n", i)
