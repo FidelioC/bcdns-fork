@@ -231,12 +231,14 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 }
 
 func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string, bootIndex int, timeout time.Duration) *VerificationResult {
+	// 1) connect to boot node, this function will also broadcast the result to other peers
 	vn.ConnectBootNode(ctx, targetJSON, bootIndex)
 
 	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
 	timeoutChan := time.After(timeout)
 
+	// 2) will try and timeout if consensus hasn't been reached for a certain time
 	for {
 		select {
 		case <-ticker.C:

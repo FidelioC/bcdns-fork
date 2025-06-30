@@ -145,14 +145,11 @@ func main() {
 		// here, the verifying network will do logics to verify the boot nodes metadata
 	nodes := verifying_network.CreateVerifierNetwork(3)
 	
-	// nodes[0].SendMessage(context.Background(), "Hello from Node 0!")
-	// fmt.Println()
-	// nodes[0].ConnectBootNode(context.Background(), json_target, 0)
-	// nodes[1].ConnectBootNode(context.Background(), json_target, 0)
-	// nodes[2].ConnectBootNode(context.Background(), json_target, 0)
+	// TODO: check each i un the boot node array
 	resultsChan := make(chan *verifying_network.VerificationResult, len(nodes))
 	for i := range nodes {
 		go func(i int) {
+			// each of the result that's being returned by the node is a result of the consensus with the other peers
 			res := nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 30*time.Second)
 			resultsChan <- res
 		}(i)
