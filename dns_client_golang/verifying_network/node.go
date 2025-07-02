@@ -110,21 +110,27 @@ func (vn *VerifierNode) PrintHostInfo() {
 func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 	go func() {
 		for {
+			// get the message
 			msg, err := vn.sub.Next(ctx)
 			if err != nil {
 				log.Println("Error reading message:", err)
 				continue
 			}
-			if msg.ReceivedFrom == vn.host.ID() {
-				continue
-			}
-
+			// // ignore if message come from "this" node
+			// if msg.ReceivedFrom == vn.host.ID() {
+			// 	continue
+			// }
+			
+			// convert msg to json
 			var result VerificationResult
 			err = json.Unmarshal(msg.Data, &result)
+			
+			// check if there's no error
 			if err == nil {
+				// store result and format to json
 				vn.receivedResults[result.NodeID] = result
-
 				jsonPretty, err := json.MarshalIndent(result, "", "  ")
+
 				if err == nil {
 					fmt.Printf("[Node %s] Received verification from %s:\n%s\n",
 						vn.host.ID().String(), result.NodeID, string(jsonPretty))
@@ -134,7 +140,7 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 				}
 
 				// Perform consensus check when enough results are collected
-				if len(vn.receivedResults) >= 2 { // You can adjust this threshold
+				if len(vn.receivedResults) >= 2 { // TODO: adjust result with "n" nodes
 					vn.CheckConsensus()
 				}
 			} else {
@@ -168,14 +174,15 @@ func (vn *VerifierNode) CheckConsensus() {
 		}
 	}
 
-	if maxCount > len(vn.receivedResults)/2 {
-		vn.consensusAchieved = true
-		for _, res := range vn.receivedResults {
-			if res.ChainName == consensusKey.ChainName && res.Version == consensusKey.Version && res.BlockHash == consensusKey.BlockHash {
-				vn.consensusResult = &res
-				break
-			}
-		}
+	// Check if *this node* has a result and it agrees with the consensus
+	selfRes, ok := vn.receivedResults[vn.host.ID().String()]
+	if ok && selfRes.IsSuccess &&
+		selfRes.ChainName == consensusKey.ChainName &&
+		selfRes.Version == consensusKey.Version &&
+		selfRes.BlockHash == consensusKey.BlockHash &&
+		maxCount > len(vn.receivedResults)/2 {
+			vn.consensusAchieved = true
+			vn.consensusResult = &selfRes
 	}
 }
 
