@@ -145,7 +145,9 @@ func main() {
 		// here, the verifying network will do logics to verify the boot nodes metadata
 	nodes := verifying_network.CreateVerifierNetwork(3)
 	
-	// TODO: check each i un the boot node array
+	// TODO: 
+	// check each i in the boot node array
+	// "n" nodes parameter
 	resultsChan := make(chan *verifying_network.VerificationResult, len(nodes))
 	for i := range nodes {
 		go func(i int) {
@@ -160,12 +162,7 @@ func main() {
 		fmt.Printf("Result %d:\n%+v\n", i, res)
 	}
 	
-	// 3) verifying network return result back to client
-	// for i:=range nodes{
-	// 	fmt.Printf("\n\nConsensus Result %v s: \n", i)
-	// 	fmt.Println(nodes[i].GetConsensusResult())
-	// }
-	// 4) close verifying network
+	// TODO: 3) with the results, the client itself will do the boot node verification using zksnark?
 
 
 	select{} // prevent main from exiting
