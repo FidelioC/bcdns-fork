@@ -147,7 +147,6 @@ func main() {
 	
 	// TODO: 
 	// check each i in the boot node array
-	// "n" nodes parameter
 	resultsChan := make(chan *verifying_network.VerificationResult, len(nodes))
 	for i := range nodes {
 		go func(i int) {
