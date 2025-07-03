@@ -42,11 +42,12 @@ type VerifierNode struct {
 	receivedResults map[string]VerificationResult
 	consensusAchieved bool
 	consensusResult *VerificationResult
+	totalNodes int
 }
 
 
 
-func NewVerifierNode(ctx context.Context, bootstrap string) *VerifierNode {
+func NewVerifierNode(ctx context.Context, bootstrap string, n int) *VerifierNode {
 	// create the libp2p node (host)
 	newHost, err := libp2p.New() 
 	if err != nil {
@@ -97,6 +98,7 @@ func NewVerifierNode(ctx context.Context, bootstrap string) *VerifierNode {
 		topic: topic,
 		sub:   subscribe,
 		receivedResults: make(map[string]VerificationResult),
+		totalNodes: n,
 	}
 }
 
@@ -140,7 +142,7 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 				}
 
 				// Perform consensus check when enough results are collected
-				if len(vn.receivedResults) >= 2 { // TODO: adjust result with "n" nodes
+				if len(vn.receivedResults) >= vn.totalNodes { // TODO: adjust result with "n" nodes
 					vn.CheckConsensus()
 				}
 			} else {
@@ -180,7 +182,7 @@ func (vn *VerifierNode) CheckConsensus() {
 		selfRes.ChainName == consensusKey.ChainName &&
 		selfRes.Version == consensusKey.Version &&
 		selfRes.BlockHash == consensusKey.BlockHash &&
-		maxCount > len(vn.receivedResults)/2 {
+		maxCount > vn.totalNodes/2 {
 			vn.consensusAchieved = true
 			vn.consensusResult = &selfRes
 	}

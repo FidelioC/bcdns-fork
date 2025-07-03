@@ -14,7 +14,7 @@ import (
 /* mostly used for testing and running a single node */
 func RunSingleVerifier(bootstrap string){
 	ctx := context.Background()
-	vn := NewVerifierNode(ctx, bootstrap)
+	vn := NewVerifierNode(ctx, bootstrap, 1)
 	vn.PrintHostInfo()
 	vn.ListenForMessages(ctx)
 
@@ -36,7 +36,7 @@ func CreateVerifierNetwork(n int) []*VerifierNode {
 	nodes := make([]*VerifierNode, 0, n)
 
 	// 1. Create the bootstrap node (no address needed)
-	bootstrapNode := NewVerifierNode(ctx, "")
+	bootstrapNode := NewVerifierNode(ctx, "", n)
 	nodes = append(nodes, bootstrapNode)
 	fmt.Println("Bootstrap node started")
 	bootstrapNode.PrintHostInfo()
@@ -54,7 +54,7 @@ func CreateVerifierNetwork(n int) []*VerifierNode {
 
 	// 3. Spin up remaining nodes, connecting to bootstrap
 	for i := 1; i < n; i++ {
-		node := NewVerifierNode(ctx, bootstrapAddr)
+		node := NewVerifierNode(ctx, bootstrapAddr, n)
 		nodes = append(nodes, node)
 		node.PrintHostInfo()
 		time.Sleep(500 * time.Millisecond)
