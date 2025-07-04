@@ -2,8 +2,11 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -162,7 +165,53 @@ func main() {
 	}
 	
 	// TODO: 3) with the results, the client itself will do the boot node verification using zksnark?
+	/* 
+	json_target: {
+		"id": "example",
+		"bootNodes": [
+			"/ip4/172.20.0.2/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh",
+			"/ip4/172.20.0.3/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh"
+		]
+	}
 
+	&{NodeID:12D3KooWF8u1fioBtHZGg9iciv893wbvmzCv4XBkjNwaUYhZazD1 ChainName:example NodeName:Substrate Node Version:0.1.0-7f7632fcc14 BlockHash:0x2af58600bbd7d3475ef1bd19ee413e04d3cfd4088b4e08434a27ae8132dfa135 BootIndex:0 IsSuccess:true ErrorMsg:}
+	*/
+
+	var finalResult *verifying_network.VerificationResult
+	for i := 0; i < len(nodes); i++ {
+		res := <-resultsChan
+		if res != nil {
+			finalResult = res
+			break
+		}
+	}
+
+	if finalResult == nil {
+		fmt.Println("No valid verification result received.")
+	} else {
+		// Combine with already-parsed target
+		combined := struct {
+			ChainSpec          *substrate.ChainSpecRes                `json:"chainSpec"`
+			VerificationResult verifying_network.VerificationResult `json:"verificationResult"`
+		}{
+			ChainSpec:          target,
+			VerificationResult: *finalResult,
+		}
+
+		// Write to file
+		file, err := os.Create("combined_result.json")
+		if err != nil {
+			log.Fatalf("Failed to create output file: %v", err)
+		}
+		defer file.Close()
+
+		encoder := json.NewEncoder(file)
+		encoder.SetIndent("", "  ")
+		if err := encoder.Encode(combined); err != nil {
+			log.Fatalf("Failed to encode combined result: %v", err)
+		}
+		fmt.Println("Wrote combined_result.json successfully.")
+	}
 
 	select{} // prevent main from exiting
 }
