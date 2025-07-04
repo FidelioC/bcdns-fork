@@ -118,6 +118,7 @@ func main() {
 	var runs, runsPerSecond int
 	var domain, outFile string
 	var target *substrate.ChainSpecRes
+	var numNodes int = 3
 	flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
 	flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
 	flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
@@ -146,7 +147,7 @@ func main() {
 	fmt.Printf("json_target: %s", json_target)
 	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
 		// here, the verifying network will do logics to verify the boot nodes metadata
-	nodes := verifying_network.CreateVerifierNetwork(3)
+	nodes := verifying_network.CreateVerifierNetwork(numNodes)
 	
 	// TODO: 
 	// check each i in the boot node array
@@ -159,9 +160,13 @@ func main() {
 		}(i)
 	}
 
-	for i := 0; i < len(nodes); i++ {
+	var finalResult *verifying_network.VerificationResult
+	for i := 0; i < numNodes; i++ {
 		res := <-resultsChan
 		fmt.Printf("Result %d:\n%+v\n", i, res)
+		if res != nil && finalResult == nil {
+			finalResult = res
+		}
 	}
 	
 	// TODO: 3) with the results, the client itself will do the boot node verification using zksnark?
@@ -176,15 +181,6 @@ func main() {
 
 	&{NodeID:12D3KooWF8u1fioBtHZGg9iciv893wbvmzCv4XBkjNwaUYhZazD1 ChainName:example NodeName:Substrate Node Version:0.1.0-7f7632fcc14 BlockHash:0x2af58600bbd7d3475ef1bd19ee413e04d3cfd4088b4e08434a27ae8132dfa135 BootIndex:0 IsSuccess:true ErrorMsg:}
 	*/
-
-	var finalResult *verifying_network.VerificationResult
-	for i := 0; i < len(nodes); i++ {
-		res := <-resultsChan
-		if res != nil {
-			finalResult = res
-			break
-		}
-	}
 
 	if finalResult == nil {
 		fmt.Println("No valid verification result received.")
