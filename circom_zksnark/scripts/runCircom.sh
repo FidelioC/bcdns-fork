@@ -10,7 +10,7 @@ mkdir $folder_path
 cd $folder_path 
 
 # compile circom file
-circom ../scripts/circomCheck.circom --r1cs --wasm --sym
+circom ../scripts/circomCheck.circom --r1cs --wasm --sym -l node_modules
 
 cd circomCheck_js
 
