@@ -1,13 +1,14 @@
 - circom setup:
-
-  - git clone https://github.com/iden3/circom.git
-  - cd circom
-  - cargo build --release
-  - cargo install --path circom
+  git clone https://github.com/iden3/circom.git
+  cd circom
+  cargo build --release
+  cargo install --path circom
 
 - circomlib setup:
+  npm i circomlib
 
-  - npm i circomlib
+- snarkjs setup:
+  sudo npm install -g snarkjs
 
 - example usage script by script:
 
