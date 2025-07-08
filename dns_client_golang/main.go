@@ -187,7 +187,7 @@ func main() {
 	} else {
 		// Define minimal combined structure
 		combined := struct {
-			ChainName string   `json:"chainName"`
+			ChainName string   `json:"name"`
 			ID        string   `json:"id"`
 			BootNodes []string `json:"bootNodes"`
 		}{

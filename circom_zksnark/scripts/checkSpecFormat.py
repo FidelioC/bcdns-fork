@@ -6,12 +6,7 @@ import click
 required_keys = [
     "name",
     "id",
-    "chainType",
     "bootNodes",
-    "telemetryEndpoints",
-    "protocolId",
-    "properties",
-    "codeSubstitutes",
 ]
 
 result_dict = {}
