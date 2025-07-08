@@ -185,13 +185,15 @@ func main() {
 	if finalResult == nil {
 		fmt.Println("No valid verification result received.")
 	} else {
-		// Combine with already-parsed target
+		// Define minimal combined structure
 		combined := struct {
-			ChainSpec          *substrate.ChainSpecRes                `json:"chainSpec"`
-			VerificationResult verifying_network.VerificationResult `json:"verificationResult"`
+			ChainName string   `json:"chainName"`
+			ID        string   `json:"id"`
+			BootNodes []string `json:"bootNodes"`
 		}{
-			ChainSpec:          target,
-			VerificationResult: *finalResult,
+			ChainName: finalResult.ChainName,
+			ID:        target.Id,
+			BootNodes: target.BootNodes,
 		}
 
 		// Write to file
@@ -206,6 +208,7 @@ func main() {
 		if err := encoder.Encode(combined); err != nil {
 			log.Fatalf("Failed to encode combined result: %v", err)
 		}
+
 		fmt.Println("Wrote combined_result.json successfully.")
 	}
 
