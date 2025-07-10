@@ -1,12 +1,8 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
 	"flag"
 	"fmt"
-	"log"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -137,80 +133,8 @@ func main() {
 		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
 	}
 
-	// 1) create verifying network
-	fmt.Println("TEST TARGET")
-	fmt.Printf("\n%+v\n", target)
-	json_target, err := verifying_network.ChainSpecToJson(target)
-	if err != nil{
-		panic(err)
-	}
-	fmt.Printf("json_target: %s", json_target)
-	// 2) api call - client have verifying network nodes connect to the target, list of boot nodes
-		// here, the verifying network will do logics to verify the boot nodes metadata
-	nodes := verifying_network.CreateVerifierNetwork(numNodes)
-	
-	// TODO: 
-	// check each i in the boot node array
-	resultsChan := make(chan *verifying_network.VerificationResult, len(nodes))
-	for i := range nodes {
-		go func(i int) {
-			// each of the result that's being returned by the node is a result of the consensus with the other peers
-			res := nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 30*time.Second)
-			resultsChan <- res
-		}(i)
-	}
-
-	var finalResult *verifying_network.VerificationResult
-	for i := 0; i < numNodes; i++ {
-		res := <-resultsChan
-		fmt.Printf("Result %d:\n%+v\n", i, res)
-		if res != nil && finalResult == nil {
-			finalResult = res
-		}
-	}
-	
-	// TODO: 3) with the results, the client itself will do the boot node verification using zksnark?
-	/* 
-	json_target: {
-		"id": "example",
-		"bootNodes": [
-			"/ip4/172.20.0.2/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh",
-			"/ip4/172.20.0.3/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh"
-		]
-	}
-
-	&{NodeID:12D3KooWF8u1fioBtHZGg9iciv893wbvmzCv4XBkjNwaUYhZazD1 ChainName:example NodeName:Substrate Node Version:0.1.0-7f7632fcc14 BlockHash:0x2af58600bbd7d3475ef1bd19ee413e04d3cfd4088b4e08434a27ae8132dfa135 BootIndex:0 IsSuccess:true ErrorMsg:}
-	*/
-
-	if finalResult == nil {
-		fmt.Println("No valid verification result received.")
-	} else {
-		// Define minimal combined structure
-		combined := struct {
-			ChainName string   `json:"name"`
-			ID        string   `json:"id"`
-			BootNodes []string `json:"bootNodes"`
-		}{
-			ChainName: finalResult.ChainName,
-			ID:        target.Id,
-			BootNodes: target.BootNodes,
-		}
-
-		// Write to file
-		file, err := os.Create("combined_result.json")
-		if err != nil {
-			log.Fatalf("Failed to create output file: %v", err)
-		}
-		defer file.Close()
-
-		encoder := json.NewEncoder(file)
-		encoder.SetIndent("", "  ")
-		if err := encoder.Encode(combined); err != nil {
-			log.Fatalf("Failed to encode combined result: %v", err)
-		}
-
-		fmt.Println("Wrote combined_result.json successfully.")
-	}
+	// verify returned target spec
+	verifying_network.VerifySpec(target, numNodes)
 
 	select{} // prevent main from exiting
 }
