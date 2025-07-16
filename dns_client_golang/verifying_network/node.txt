@@ -30,6 +30,9 @@ type VerificationResult struct {
 	ErrorMsg    string `json:"errorMsg,omitempty"`
 }
 
+// topic name should always be the same for all nodes in the verifying network
+const TopicName = "verifying-network" 
+
 type VerifierNode struct {
 	host  host.Host
 	ps    *pubsub.PubSub
@@ -42,11 +45,13 @@ type VerifierNode struct {
 	totalNodes int
 }
 
-func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, nameTopic string) (*VerifierNode, error) {
+
+
+func NewVerifierNode(ctx context.Context, bootstrap string, n int) *VerifierNode {
 	// create the libp2p node (host)
 	newHost, err := libp2p.New() 
 	if err != nil {
-		return nil, fmt.Errorf("failed to create libp2p host: %w", err)
+		log.Fatal(err)
 	}
 
 	// if bootstrap address was provided, to talk to other existing peers
@@ -54,13 +59,13 @@ func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, name
 		// parse the multiaddr string, e.g., /ip6/2604:3d09:a98d:b100:4552:be06:a3ca:b295/udp/64042/webrtc-direct/certhash/uEiAAKlDpHtl0D3aOBbJEEYqArQLTuZ9zL-smFMJ17JGrag/p2p/12D3KooWAVaoXdP8wurmgFXizqKHV4NGZnHzJxpKdmyAvfS9tEW1
 		maddr, err := ma.NewMultiaddr(bootstrap)
 		if err != nil {
-			return nil, fmt.Errorf("invalid bootstrap multiaddr: %w", err)
+			log.Fatal(err)
 		}
 
 		// convert the maddr to peer.Addrinfo, which separates the peer ID and addresses
 		info, err := peer.AddrInfoFromP2pAddr(maddr)
 		if err != nil {
-			return nil, fmt.Errorf("failed to extract AddrInfo: %w", err)
+			log.Fatal(err)
 		}
 		
 		// add the address to this node's internal peer storage
@@ -72,19 +77,19 @@ func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, name
 	// initialize new GossipSub
 	pubSub, err := pubsub.NewGossipSub(ctx, newHost)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create pubsub: %w", err)
+		log.Fatal(err)
 	}
 
 	// join on a pubsub topic (constant), to send messages to other peers on the same topic
-	topic, err := pubSub.Join(nameTopic)
+	topic, err := pubSub.Join(TopicName)
 	if err != nil {
-		return nil, fmt.Errorf("failed to join pubsub topic: %w", err)
+		log.Fatal(err)
 	}
 
 	// subscribe to the topic to receive/ listen messages sent by other peers
 	subscribe, err := topic.Subscribe()
 	if err != nil {
-		return nil, fmt.Errorf("failed to subscribe to pubsub topic: %w", err)
+		log.Fatal(err)
 	}
 
 	return &VerifierNode{
@@ -93,8 +98,8 @@ func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, name
 		topic: topic,
 		sub:   subscribe,
 		receivedResults: make(map[string]VerificationResult),
-		totalNodes: totalNodes,
-	}, nil
+		totalNodes: n,
+	}
 }
 
 func (vn *VerifierNode) PrintHostInfo() {
