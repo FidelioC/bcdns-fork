@@ -284,3 +284,46 @@ func (vn *VerifierNode) GetConsensusResult() (*VerificationResult){
 		return nil
 	}
 }
+
+func PrintVerifierNodeSummary(vn *VerifierNode) {
+	fmt.Println("===== VerifierNode Summary =====")
+
+	// Host ID
+	fmt.Printf("Host ID: %s\n", vn.host.ID())
+
+	// Host multiaddresses
+	fmt.Println("Listening Addresses:")
+	for _, addr := range vn.host.Addrs() {
+		fmt.Printf(" - %s\n", addr.String())
+	}
+
+	// Topic (name not directly accessible, but can indicate presence)
+	if vn.topic != nil {
+		fmt.Println("PubSub Topic: [joined]")
+	} else {
+		fmt.Println("PubSub Topic: [not joined]")
+	}
+
+	// Subscription status
+	if vn.sub != nil {
+		fmt.Println("Subscribed: yes")
+	} else {
+		fmt.Println("Subscribed: no")
+	}
+
+	// Total nodes
+	fmt.Printf("Total Nodes: %d\n", vn.totalNodes)
+
+	// Received results count
+	fmt.Printf("Received Results: %d\n", len(vn.receivedResults))
+
+	// Consensus status
+	if vn.consensusAchieved {
+		fmt.Println("Consensus Achieved: True")
+		if vn.consensusResult != nil {
+			fmt.Printf("Consensus Result: %+v\n", *vn.consensusResult)
+		}
+	} else {
+		fmt.Println("Consensus Achieved: False")
+	}
+}
