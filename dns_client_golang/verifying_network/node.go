@@ -35,11 +35,14 @@ type VerifierNode struct {
 	ps    *pubsub.PubSub
 	topic *pubsub.Topic
 	sub   *pubsub.Subscription
-
 	receivedResults map[string]VerificationResult
 	consensusAchieved bool
 	consensusResult *VerificationResult
 	totalNodes int
+
+	// Function fields for easier testing
+	OnResult func(result VerificationResult)
+	OnError  func(err error)
 }
 
 func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, nameTopic string) (*VerifierNode, error) {
@@ -110,38 +113,40 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 			// get the message
 			msg, err := vn.sub.Next(ctx)
 			if err != nil {
-				log.Println("Error reading message:", err)
+				vn.handleError(fmt.Errorf("error reading message: %w", err))
 				continue
 			}
-			// // ignore if message come from "this" node
-			// if msg.ReceivedFrom == vn.host.ID() {
-			// 	continue
-			// }
-			
+
 			// convert msg to json
 			var result VerificationResult
 			err = json.Unmarshal(msg.Data, &result)
 			
-			// check if there's no error
-			if err == nil {
-				// store result and format to json
-				vn.receivedResults[result.NodeID] = result
-				jsonPretty, err := json.MarshalIndent(result, "", "  ")
+			if err != nil {
+				vn.handleError(fmt.Errorf("invalid JSON: %w", err))
+				continue
+			}
+			
+			// store result and format to json
+			vn.receivedResults[result.NodeID] = result
 
-				if err == nil {
-					fmt.Printf("[Node %s] Received verification from %s:\n%s\n",
-						vn.host.ID().String(), result.NodeID, string(jsonPretty))
-					fmt.Printf("[Node %s] Current received result length: %v\n", vn.host.ID().String(), len(vn.receivedResults))
-				} else {
-					fmt.Printf("Received result from %s, but failed to format JSON: %v\n", result.NodeID, err)
-				}
+			// call optional test handler
+			if vn.OnResult != nil {
+				vn.OnResult(result)
+			}
 
-				// Perform consensus check when enough results are collected
-				if len(vn.receivedResults) >= vn.totalNodes { // TODO: adjust result with "n" nodes
-					vn.CheckConsensus()
-				}
+			jsonPretty, err := json.MarshalIndent(result, "", "  ")
+
+			if err != nil {
+				vn.handleError(fmt.Errorf("JSON formatting error: %w", err))
 			} else {
-				fmt.Printf("Received non-verification message: %s\n", string(msg.Data))
+				fmt.Printf("[Node %s] Received verification from %s:\n%s\n",
+					vn.host.ID().String(), result.NodeID, string(jsonPretty))
+				fmt.Printf("[Node %s] Current received result length: %v\n", vn.host.ID().String(), len(vn.receivedResults))
+			}
+
+			// Perform consensus check when enough results are collected
+			if len(vn.receivedResults) >= vn.totalNodes {
+				vn.CheckConsensus()
 			}
 		}
 	}()
@@ -325,5 +330,11 @@ func PrintVerifierNodeSummary(vn *VerifierNode) {
 		}
 	} else {
 		fmt.Println("Consensus Achieved: False")
+	}
+}
+
+func (vn *VerifierNode) handleError(err error) {
+	if vn.OnError != nil {
+		vn.OnError(err)
 	}
 }
