@@ -133,3 +133,87 @@ func TestListenForMessages_ConsensusTrigger(t *testing.T) {
 		t.Errorf("Expected 2 results, got %d", len(vn.receivedResults))
 	}
 }
+
+func TestCheckConsensus_valid(t *testing.T) {
+	ctx := context.Background()
+	topic := "test_topic_consensus"
+	vn, _ := NewVerifierNode(ctx, "", 3, topic)
+	defer vn.host.Close()
+
+	// Simulated consensus result
+	consensusRes := VerificationResult{
+		NodeID:    vn.host.ID().String(),
+		ChainName: "Polkadot",
+		Version:   "1.0",
+		BlockHash: "0xabc",
+		IsSuccess: true,
+	}
+
+	// Inject self result and 2 other matching peer results
+	vn.receivedResults[vn.host.ID().String()] = consensusRes
+	vn.receivedResults["peer1"] = consensusRes
+	vn.receivedResults["peer2"] = consensusRes
+
+	// Run consensus check
+	vn.CheckConsensus()
+
+	// Assert consensus was achieved
+	if !vn.consensusAchieved {
+		t.Fatal("Expected consensus to be achieved, but it wasn't")
+	}
+	if vn.consensusResult == nil || vn.consensusResult.ChainName != "Polkadot" {
+		t.Fatalf("Unexpected consensus result: %+v", vn.consensusResult)
+	}
+
+	
+	t.Logf("Consensus achieved: %v", vn.consensusAchieved)
+	t.Logf("Consensus result: %+v", vn.consensusResult)
+}
+
+func TestCheckConsensus_NoConsensus(t *testing.T) {
+	ctx := context.Background()
+	topic := "test_topic_no_consensus"
+	vn, _ := NewVerifierNode(ctx, "", 3, topic)
+	defer vn.host.Close()
+
+	// Node's own result
+	vn.receivedResults[vn.host.ID().String()] = VerificationResult{
+		NodeID:    vn.host.ID().String(),
+		ChainName: "Polkadot",
+		Version:   "1.0",
+		BlockHash: "0xabc",
+		IsSuccess: true,
+	}
+
+	// Different peer results
+	vn.receivedResults["peer1"] = VerificationResult{
+		NodeID:    "peer1",
+		ChainName: "Kusama",
+		Version:   "2.0",
+		BlockHash: "0xdef",
+		IsSuccess: true,
+	}
+
+	vn.receivedResults["peer2"] = VerificationResult{
+		NodeID:    "peer2",
+		ChainName: "Moonbeam",
+		Version:   "3.0",
+		BlockHash: "0xghi",
+		IsSuccess: true,
+	}
+
+	// Run consensus check
+	vn.CheckConsensus()
+
+	// Expect no consensus
+	if vn.consensusAchieved {
+		t.Fatal("Expected no consensus to be achieved, but it was")
+	}
+	if vn.consensusResult != nil {
+		t.Fatalf("Expected consensus result to be nil, got: %+v", vn.consensusResult)
+	}
+
+	t.Logf("Consensus achieved: %v", vn.consensusAchieved)
+	t.Logf("Consensus result: %+v", vn.consensusResult)
+
+}
