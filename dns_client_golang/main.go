@@ -133,8 +133,10 @@ func main() {
 		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
 	}
 
+	json_target, _ := verifying_network.ChainSpecToJson(target)
+	fmt.Println(json_target)
 	// verify returned target spec
-	verifying_network.VerifySpec(target, numNodes)
+	verifying_network.VerifySpec(json_target, numNodes)
 
 	select{} // prevent main from exiting
 }

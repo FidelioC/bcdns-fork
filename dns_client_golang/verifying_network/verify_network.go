@@ -96,45 +96,49 @@ func ConnectBootNodes(nodes []*VerifierNode, json_target string, numNodes int) *
 	return finalResult
 }
 
-func GenerateResultJson(finalResult *VerificationResult, target *substrate.ChainSpecRes){
+func GenerateResultJson(finalResult *VerificationResult, json_target string){
 	if finalResult == nil {
 		fmt.Println("No valid verification result received.")
-	} else {
-		// Define minimal combined structure
-		combined := struct {
-			ChainName string   `json:"name"`
-			ID        string   `json:"id"`
-			BootNodes []string `json:"bootNodes"`
-		}{
-			ChainName: finalResult.ChainName,
-			ID:        target.Id,
-			BootNodes: target.BootNodes,
-		}
-
-		// Write to file
-		file, err := os.Create("combined_result.json")
-		if err != nil {
-			log.Fatalf("Failed to create output file: %v", err)
-		}
-		defer file.Close()
-
-		encoder := json.NewEncoder(file)
-		encoder.SetIndent("", "  ")
-		if err := encoder.Encode(combined); err != nil {
-			log.Fatalf("Failed to encode combined result: %v", err)
-		}
-
-		fmt.Println("Wrote combined_result.json successfully.")
+		return
+	} 
+	
+	// Parse the target JSON
+	var target substrate.ChainSpecRes
+	if err := json.Unmarshal([]byte(json_target), &target); err != nil {
+		log.Fatalf("Failed to parse target JSON: %v", err)
 	}
+
+
+	// Define minimal combined structure
+	combined := struct {
+		ChainName string   `json:"name"`
+		ID        string   `json:"id"`
+		BootNodes []string `json:"bootNodes"`
+	}{
+		ChainName: finalResult.ChainName,
+		ID:        target.Id,
+		BootNodes: target.BootNodes,
+	}
+
+	// Write to file
+	file, err := os.Create("combined_result.json")
+	if err != nil {
+		log.Fatalf("Failed to create output file: %v", err)
+	}
+	defer file.Close()
+
+	encoder := json.NewEncoder(file)
+	encoder.SetIndent("", "  ")
+	if err := encoder.Encode(combined); err != nil {
+		log.Fatalf("Failed to encode combined result: %v", err)
+	}
+
+	fmt.Println("Wrote combined_result.json successfully.")
+	
 }
 
-func VerifySpec(target *substrate.ChainSpecRes, numNodes int){
-	json_target, err := ChainSpecToJson(target)
-
-	if err != nil{
-		panic(err)
-	}
-
+func VerifySpec(json_target string, numNodes int){
+	
 	// 1) create verifying network
 	nodes := CreateVerifierNetwork(numNodes)
 
@@ -142,5 +146,5 @@ func VerifySpec(target *substrate.ChainSpecRes, numNodes int){
 	finalResult := ConnectBootNodes(nodes, json_target, numNodes)
 
 	// 3) client collect results and generate to json file
-	GenerateResultJson(finalResult, target)
+	GenerateResultJson(finalResult, json_target)
 }
