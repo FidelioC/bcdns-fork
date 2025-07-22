@@ -27,4 +27,19 @@ func TestVerifySpec_HappyPath(t *testing.T) {
 	_ = os.Remove("combined_result.json")
 }
 
+func TestVerifySpec_InvalidJSON(t *testing.T) {
+	// Malformed JSON (missing closing brace)
+	invalidJSON := `{
+		"id": "example",
+		"bootNodes": [
+			"/ip4/127.0.0.1/tcp/9945/p2p/QmSomeNode"
+		]` // ← missing closing brace
+
+	err := VerifySpec(invalidJSON, 3)
+	if err == nil {
+		t.Fatal("Expected error due to invalid JSON input, but got none")
+	}
+}
+
+
 

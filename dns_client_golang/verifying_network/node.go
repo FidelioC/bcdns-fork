@@ -192,12 +192,11 @@ func (vn *VerifierNode) CheckConsensus() {
 }
 
 
-func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, bootIndex int) {
+func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, bootIndex int) error {
 	var spec substrate.ChainSpecRes
 	err := json.Unmarshal([]byte(targetJSON), &spec)
 	if err != nil {
-		log.Println("Failed to unmarshal target JSON:", err)
-		return
+		return fmt.Errorf("failed to unmarshal target JSON: %w", err)
 	}
 
 	connector := substrate.NewSubstrateConnector(false)
@@ -213,19 +212,19 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 		result.ErrorMsg = fmt.Sprintf("API connection failed: %v", err)
 		result.IsSuccess = false
 	} else {
-		// try to get metadata
+		// Try to get metadata
 		result_chain, err1 := api.RPC.System.Chain()
 		result_nodename, err2 := api.RPC.System.Name()
 		result_version, err3 := api.RPC.System.Version()
 		blockHash, err4 := api.RPC.Chain.GetBlockHashLatest()
 
-		// if any error occurs, mark failure
+		// If any error occurs, mark failure
 		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
 			result.IsSuccess = false
 			result.ErrorMsg = fmt.Sprintf("Metadata fetch errors: Chain=%v, Name=%v, Version=%v, BlockHash=%v",
 				err1, err2, err3, err4)
 		} else {
-			// populate result
+			// Populate result
 			result.ChainName = convertTextToString(result_chain)
 			result.NodeName = convertTextToString(result_nodename)
 			result.Version = convertTextToString(result_version)
@@ -236,16 +235,19 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 	// Broadcast result
 	resultJSON, err := json.Marshal(result)
 	if err != nil {
-		log.Println("Failed to marshal verification result:", err)
-		return
+		return fmt.Errorf("failed to marshal verification result: %w", err)
 	}
 
 	vn.SendMessage(ctx, string(resultJSON))
+	return nil
 }
 
-func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string, bootIndex int, timeout time.Duration) *VerificationResult {
+func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string, bootIndex int, timeout time.Duration) (*VerificationResult, error) {
 	// 1) connect to boot node, this function will also broadcast the result to other peers
-	vn.ConnectBootNode(ctx, targetJSON, bootIndex)
+	err := vn.ConnectBootNode(ctx, targetJSON, bootIndex)
+	if err != nil {
+		return nil, err
+	}
 
 	ticker := time.NewTicker(200 * time.Millisecond)
 	defer ticker.Stop()
@@ -256,11 +258,11 @@ func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string
 		select {
 		case <-ticker.C:
 			if vn.consensusResult != nil {
-				return vn.consensusResult
+				return vn.consensusResult, nil
 			}
 		case <-timeoutChan:
 			fmt.Printf("Timeout [Node %s] : No consensus achieved\n", vn.host.ID().String())
-			return nil
+			return nil, nil
 		}
 	}
 }

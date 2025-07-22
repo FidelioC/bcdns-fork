@@ -75,26 +75,40 @@ func CreateVerifierNetwork(n int) []*VerifierNode {
 	return nodes
 }
 
-func ConnectBootNodes(nodes []*VerifierNode, json_target string, numNodes int) *VerificationResult{
+func ConnectBootNodes(nodes []*VerifierNode, jsonTarget string, numNodes int) (*VerificationResult, error) {
 	resultsChan := make(chan *VerificationResult, len(nodes))
+	errorsChan := make(chan error, len(nodes))
+
 	for i := range nodes {
 		go func(i int) {
-			// each of the result that's being returned by the node is a result of the consensus with the other peers
-			res := nodes[i].GetBootNodeResult(context.Background(), json_target, 0, 30*time.Second)
-			resultsChan <- res
+			res, err := nodes[i].GetBootNodeResult(context.Background(), jsonTarget, 0, 30*time.Second)
+			if err != nil {
+				errorsChan <- err
+				resultsChan <- nil
+			} else {
+				errorsChan <- nil
+				resultsChan <- res
+			}
 		}(i)
 	}
-	
+
 	var finalResult *VerificationResult
 	for i := 0; i < numNodes; i++ {
 		res := <-resultsChan
-		fmt.Printf("Result %d:\n%+v\n", i, res)
+		err := <-errorsChan
+
+		if err != nil {
+			// If it's a JSON issue or connection issue, propagate it back
+			return nil, err
+		}
 		if res != nil && finalResult == nil {
 			finalResult = res
 		}
 	}
-	return finalResult
+
+	return finalResult, nil
 }
+
 
 func GenerateResultJson(finalResult *VerificationResult, json_target string){
 	if finalResult == nil {
@@ -137,14 +151,17 @@ func GenerateResultJson(finalResult *VerificationResult, json_target string){
 	
 }
 
-func VerifySpec(json_target string, numNodes int){
-	
+func VerifySpec(json_target string, numNodes int) error {
 	// 1) create verifying network
 	nodes := CreateVerifierNetwork(numNodes)
 
 	// 2) connect to bootnodes and do consensus
-	finalResult := ConnectBootNodes(nodes, json_target, numNodes)
-
+	finalResult, err := ConnectBootNodes(nodes, json_target, numNodes)
+	if err != nil {
+		return fmt.Errorf("failed during consensus phase: %w", err)
+	}
 	// 3) client collect results and generate to json file
 	GenerateResultJson(finalResult, json_target)
+
+	return nil
 }
