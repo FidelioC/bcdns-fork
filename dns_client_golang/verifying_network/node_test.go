@@ -217,3 +217,58 @@ func TestCheckConsensus_NoConsensus(t *testing.T) {
 	t.Logf("Consensus result: %+v", vn.consensusResult)
 
 }
+
+func TestCheckConsensus_PartialConsensus(t *testing.T) {
+	ctx := context.Background()
+	topic := "test_partial_consensus_" + time.Now().Format("150405")
+
+	vn, _ := NewVerifierNode(ctx, "", 3, topic)
+	defer vn.host.Close()
+
+	// 2 nodes agree
+	vn.receivedResults["node1"] = VerificationResult{
+		NodeID:    "node1",
+		ChainName: "Polkadot",
+		Version:   "1.0",
+		BlockHash: "0xabc",
+		IsSuccess: true,
+	}
+	vn.receivedResults["node2"] = VerificationResult{
+		NodeID:    "node2",
+		ChainName: "Polkadot",
+		Version:   "1.0",
+		BlockHash: "0xabc",
+		IsSuccess: true,
+	}
+
+	// Local node disagrees
+	selfID := vn.host.ID().String()
+	vn.receivedResults[selfID] = VerificationResult{
+		NodeID:    selfID,
+		ChainName: "Kusama",
+		Version:   "1.0",
+		BlockHash: "0xdef",
+		IsSuccess: true,
+	}
+
+	// Run consensus check
+	vn.CheckConsensus()
+
+	// Expect consensus to be achieved (2/3 is majority)
+	if !vn.consensusAchieved {
+		t.Fatal("Expected consensus to be achieved, but it was not")
+	}
+
+	// Check that consensusResult matches the majority (Polkadot)
+	if vn.consensusResult == nil {
+		t.Fatal("Expected consensus result to be set, but it was nil")
+	}
+	if vn.consensusResult.ChainName != "Polkadot" {
+		t.Fatalf("Expected ChainName 'Polkadot', got '%s'", vn.consensusResult.ChainName)
+	}
+	if vn.consensusResult.BlockHash != "0xabc" {
+		t.Fatalf("Expected BlockHash '0xabc', got '%s'", vn.consensusResult.BlockHash)
+	}
+}
+
+

@@ -16,7 +16,7 @@ func TestVerifySpec_HappyPath(t *testing.T) {
 		]
 	}`
 
-	VerifySpec(jsonInput, 5) // numNodes = 3
+	VerifySpec(jsonInput, 3) // numNodes = 3
 
 	// Check if file was generated
 	if _, err := os.Stat("combined_result.json"); os.IsNotExist(err) {

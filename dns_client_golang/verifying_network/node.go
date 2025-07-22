@@ -159,11 +159,18 @@ func (vn *VerifierNode) CheckConsensus() {
 		BlockHash string
 	}
 
+	// Count matching results
 	counts := make(map[key]int)
+	keyToResult := make(map[key]VerificationResult) // store one representative result for each key
+
 	for _, res := range vn.receivedResults {
 		if res.IsSuccess {
 			k := key{res.ChainName, res.Version, res.BlockHash}
 			counts[k]++
+			// Store one of the successful results per key (any one is enough)
+			if _, exists := keyToResult[k]; !exists {
+				keyToResult[k] = res
+			}
 		}
 	}
 
@@ -176,17 +183,14 @@ func (vn *VerifierNode) CheckConsensus() {
 		}
 	}
 
-	// Check if *this node* has a result and it agrees with the consensus
-	selfRes, ok := vn.receivedResults[vn.host.ID().String()]
-	if ok && selfRes.IsSuccess &&
-		selfRes.ChainName == consensusKey.ChainName &&
-		selfRes.Version == consensusKey.Version &&
-		selfRes.BlockHash == consensusKey.BlockHash &&
-		maxCount > vn.totalNodes/2 {
-			vn.consensusAchieved = true
-			vn.consensusResult = &selfRes
+	// Accept consensus if it meets quorum (simple majority)
+	if maxCount > vn.totalNodes/2 {
+		vn.consensusAchieved = true
+		consensusRes := keyToResult[consensusKey]
+		vn.consensusResult = &consensusRes
 	}
 }
+
 
 func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, bootIndex int) {
 	var spec substrate.ChainSpecRes
