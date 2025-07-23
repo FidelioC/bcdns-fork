@@ -37,43 +37,38 @@ func RunSingleVerifier(bootstrap string){
 	}
 }
 
-func CreateVerifierNetwork(n int) []*VerifierNode {
+func CreateVerifierNetwork(n int, mock substrate.APIInterface) []*VerifierNode {
 	ctx := context.Background()
 	nodes := make([]*VerifierNode, 0, n)
 
-	// 1. Create the bootstrap node (no address needed)
 	bootstrapNode, _ := NewVerifierNode(ctx, "", n, TopicName)
+	if mock != nil {
+		bootstrapNode.MockAPI = mock
+	}
 	nodes = append(nodes, bootstrapNode)
-	fmt.Println("Bootstrap node started")
-	bootstrapNode.PrintHostInfo()
-
-	// Allow time for the bootstrap node to start
 	time.Sleep(1 * time.Second)
 
-	// 2. Grab the bootstrap node's full multiaddress
 	var bootstrapAddr string
 	for _, addr := range bootstrapNode.host.Addrs() {
 		bootstrapAddr = addr.Encapsulate(ma.StringCast("/p2p/" + bootstrapNode.host.ID().String())).String()
 		break
 	}
-	fmt.Println("Bootstrap address:", bootstrapAddr)
 
-	// 3. Spin up remaining nodes, connecting to bootstrap
 	for i := 1; i < n; i++ {
 		node, _ := NewVerifierNode(ctx, bootstrapAddr, n, TopicName)
+		if mock != nil {
+			node.MockAPI = mock
+		}
 		nodes = append(nodes, node)
-		node.PrintHostInfo()
 		time.Sleep(500 * time.Millisecond)
-		fmt.Printf("Node %d connected to bootstrap.\n", i)
 	}
 
-	// 4. Start listening for messages
 	for _, node := range nodes {
 		node.ListenForMessages(ctx)
 	}
-
 	return nodes
 }
+
 
 func ConnectBootNodes(nodes []*VerifierNode, jsonTarget string, numNodes int) (*VerificationResult, error) {
 	resultsChan := make(chan *VerificationResult, len(nodes))
@@ -147,9 +142,14 @@ func GenerateResultJson(finalResult *VerificationResult, json_target string){
 	
 }
 
-func VerifySpec(json_target string, numNodes int) error {
+func VerifySpec(json_target string, numNodes int, mock_nodes []*VerifierNode) error {
+	var nodes []*VerifierNode
 	// 1) create verifying network
-	nodes := CreateVerifierNetwork(numNodes)
+	if mock_nodes == nil{
+		nodes = CreateVerifierNetwork(numNodes, nil)
+	} else{
+		nodes = mock_nodes
+	}
 
 	// 2) connect to bootnodes and do consensus
 	finalResult, err := ConnectBootNodes(nodes, json_target, numNodes)

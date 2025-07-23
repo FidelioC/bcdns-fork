@@ -136,7 +136,7 @@ func main() {
 	json_target, _ := verifying_network.ChainSpecToJson(target)
 	fmt.Println(json_target)
 	// verify returned target spec
-	verifying_network.VerifySpec(json_target, numNodes)
+	verifying_network.VerifySpec(json_target, numNodes, nil)
 
 	select{} // prevent main from exiting
 }

@@ -2,7 +2,6 @@ package verifying_network
 
 import (
 	"bytes"
-	"fmt"
 	"os"
 	"testing"
 
@@ -20,7 +19,7 @@ func TestVerifySpec_HappyPath(t *testing.T) {
 		]
 	}`
 
-	VerifySpec(jsonInput, 3) // numNodes = 3
+	VerifySpec(jsonInput, 3, nil) // numNodes = 3
 
 	// Check if file was generated
 	if _, err := os.Stat("combined_result.json"); os.IsNotExist(err) {
@@ -39,7 +38,7 @@ func TestVerifySpec_InvalidJSON(t *testing.T) {
 			"/ip4/127.0.0.1/tcp/9945/p2p/QmSomeNode"
 		]` // missing closing brace
 
-	err := VerifySpec(invalidJSON, 3)
+	err := VerifySpec(invalidJSON, 3, nil)
 	if err == nil {
 		t.Fatal("Expected error due to invalid JSON input, but got none")
 	}
@@ -56,7 +55,7 @@ func TestVerifySpec_UnreachableBootNodes(t *testing.T) {
 	}`
 
 	// Run the spec verification
-	err := VerifySpec(unreachableJSON, 3)
+	err := VerifySpec(unreachableJSON, 3, nil)
 
 	// We expect it to fail due to bootnode connection errors
 	if err == nil {
@@ -72,15 +71,10 @@ func TestVerifySpec_UnreachableBootNodes(t *testing.T) {
 func TestVerifySpec_ConsensusOnWrongMetadata(t *testing.T) {
 	numNodes := 3
 
-	// 1. Create the network
-	nodes := CreateVerifierNetwork(numNodes)
+	// 1. Create the verifier network with the mock bad API injected
+	mock_nodes := CreateVerifierNetwork(numNodes, &mocks.MockBadAPI{})
 
-	// 2. Inject the same mock API that returns bad metadata into each node
-	for _, node := range nodes {
-		node.MockAPI = &mocks.MockBadAPI{}
-	}
-
-	// 3. Prepare valid JSON input (boot node connects fine)
+	// 2. Prepare valid JSON input (boot node connects fine but metadata is fake)
 	jsonInput := `{
 		"id": "example",
 		"bootNodes": [
@@ -89,25 +83,25 @@ func TestVerifySpec_ConsensusOnWrongMetadata(t *testing.T) {
 		]
 	}`
 
-	// 4. Run the full VerifySpec (with mocked API under the hood)
-	err := VerifySpec(jsonInput, numNodes)
+	// 3. Run the full VerifySpec (nodes use mock internally)
+	err := VerifySpec(jsonInput, numNodes, mock_nodes)
 	if err != nil {
 		t.Fatalf("Unexpected error during VerifySpec: %v", err)
 	}
 
-	// 5. Check that the output file was created
+	// 4. Check that the output file was created
 	data, readErr := os.ReadFile("combined_result.json")
 	if readErr != nil {
 		t.Fatal("Expected output file combined_result.json was not created")
 	}
-	fmt.Println(data)
 	defer os.Remove("combined_result.json")
 
-	// 6. Assert the wrong metadata was written (since consensus agreed on it)
+	// 5. Assert the wrong metadata was written
 	if !bytes.Contains(data, []byte("WrongChain")) {
 		t.Errorf("Expected output to contain 'WrongChain', got: %s", string(data))
 	}
 }
+
 
 
 
