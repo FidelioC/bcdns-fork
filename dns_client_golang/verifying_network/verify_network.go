@@ -82,33 +82,29 @@ func ConnectBootNodes(nodes []*VerifierNode, jsonTarget string, numNodes int) (*
 	for i := range nodes {
 		go func(i int) {
 			res, err := nodes[i].GetBootNodeResult(context.Background(), jsonTarget, 0, 30*time.Second)
-			if err != nil {
-				errorsChan <- err
-				resultsChan <- nil
-			} else {
-				errorsChan <- nil
-				resultsChan <- res
-			}
+			resultsChan <- res
+			errorsChan <- err
 		}(i)
 	}
 
 	var finalResult *VerificationResult
+	var hasError error
+
 	for i := 0; i < numNodes; i++ {
 		res := <-resultsChan
 		err := <-errorsChan
 
 		if err != nil {
-			// If it's a JSON issue or connection issue, propagate it back
-			return nil, err
+			hasError = err // capture any error
 		}
 		if res != nil && finalResult == nil {
 			finalResult = res
 		}
 	}
 
-	return finalResult, nil
+	// Return result even if some peers failed
+	return finalResult, hasError
 }
-
 
 func GenerateResultJson(finalResult *VerificationResult, json_target string){
 	if finalResult == nil {
@@ -160,6 +156,11 @@ func VerifySpec(json_target string, numNodes int) error {
 	if err != nil {
 		return fmt.Errorf("failed during consensus phase: %w", err)
 	}
+
+	if finalResult == nil {
+		return fmt.Errorf("no consensus reached among verifier nodes")
+	}
+
 	// 3) client collect results and generate to json file
 	GenerateResultJson(finalResult, json_target)
 

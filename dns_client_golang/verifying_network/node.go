@@ -246,7 +246,7 @@ func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string
 	// 1) connect to boot node, this function will also broadcast the result to other peers
 	err := vn.ConnectBootNode(ctx, targetJSON, bootIndex)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("connect bootnode failed: %w", err)
 	}
 
 	ticker := time.NewTicker(200 * time.Millisecond)
