@@ -1,5 +1,7 @@
 package substrate
 
+import "github.com/centrifuge/go-substrate-rpc-client/v4/types"
+
 // SubstrateInterface defines the interface for the DNS client
 type SubstrateInterface interface {
 	// ResolveDomain resolves a domain and fetches its associated chain specification
@@ -14,3 +16,10 @@ type SubstrateInterface interface {
 
 // Ensure SubstrateConnector implements SubstrateInterface
 var _ SubstrateInterface = (*SubstrateConnector)(nil)
+
+type APIInterface interface {
+	Chain() (types.Text, error)
+	Name() (types.Text, error)
+	Version() (types.Text, error)
+	GetBlockHashLatest() (types.Hash, error)
+}
