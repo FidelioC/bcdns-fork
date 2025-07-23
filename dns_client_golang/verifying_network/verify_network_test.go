@@ -84,7 +84,8 @@ func TestVerifySpec_ConsensusOnWrongMetadata(t *testing.T) {
 	jsonInput := `{
 		"id": "example",
 		"bootNodes": [
-			"/ip4/127.0.0.1/tcp/9945/p2p/QmMockNode"
+			"/ip4/172.20.0.2/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh",
+			"/ip4/172.20.0.3/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh"
 		]
 	}`
 
