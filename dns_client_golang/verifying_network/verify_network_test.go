@@ -94,6 +94,8 @@ func TestVerifySpec_ConsensusOnWrongMetadata(t *testing.T) {
 	if readErr != nil {
 		t.Fatal("Expected output file combined_result.json was not created")
 	}
+	t.Logf("Generated Result JSON:\n%s", string(data))
+
 	defer os.Remove("combined_result.json")
 
 	// 5. Assert the wrong metadata was written

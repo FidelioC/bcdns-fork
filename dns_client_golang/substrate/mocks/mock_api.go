@@ -1,15 +1,12 @@
 package mocks
 
 import (
-	"fmt"
-
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 )
 
 type MockBadAPI struct{}
 
 func (m *MockBadAPI) Chain() (types.Text, error) {
-	fmt.Println("!!! MOCK CHAIN CALLED !!!")
 	return types.Text("WrongChain"), nil
 }
 
