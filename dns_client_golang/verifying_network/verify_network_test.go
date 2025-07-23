@@ -1,8 +1,12 @@
 package verifying_network
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"testing"
+
+	"github.com/khalidzahra/dns_client/substrate/mocks"
 )
 
 func TestVerifySpec_HappyPath(t *testing.T) {
@@ -64,6 +68,46 @@ func TestVerifySpec_UnreachableBootNodes(t *testing.T) {
 		t.Fatal("Output file should not exist when consensus fails")
 	}
 }
+
+func TestVerifySpec_ConsensusOnWrongMetadata(t *testing.T) {
+	numNodes := 3
+
+	// 1. Create the network
+	nodes := CreateVerifierNetwork(numNodes)
+
+	// 2. Inject the same mock API that returns bad metadata into each node
+	for _, node := range nodes {
+		node.MockAPI = &mocks.MockBadAPI{}
+	}
+
+	// 3. Prepare valid JSON input (boot node connects fine)
+	jsonInput := `{
+		"id": "example",
+		"bootNodes": [
+			"/ip4/127.0.0.1/tcp/9945/p2p/QmMockNode"
+		]
+	}`
+
+	// 4. Run the full VerifySpec (with mocked API under the hood)
+	err := VerifySpec(jsonInput, numNodes)
+	if err != nil {
+		t.Fatalf("Unexpected error during VerifySpec: %v", err)
+	}
+
+	// 5. Check that the output file was created
+	data, readErr := os.ReadFile("combined_result.json")
+	if readErr != nil {
+		t.Fatal("Expected output file combined_result.json was not created")
+	}
+	fmt.Println(data)
+	defer os.Remove("combined_result.json")
+
+	// 6. Assert the wrong metadata was written (since consensus agreed on it)
+	if !bytes.Contains(data, []byte("WrongChain")) {
+		t.Errorf("Expected output to contain 'WrongChain', got: %s", string(data))
+	}
+}
+
 
 
 

@@ -39,6 +39,9 @@ type VerifierNode struct {
 	consensusAchieved bool
 	consensusResult *VerificationResult
 	totalNodes int
+	
+	// MockAPI for testing
+	MockAPI substrate.APIInterface
 
 	// Function fields for easier testing
 	OnResult func(result VerificationResult)
@@ -201,38 +204,43 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 
 	connector := substrate.NewSubstrateConnector(false)
 
-	api, err := connector.GetSubstrateApi(spec, bootIndex)
+	var api substrate.APIInterface
+	if vn.MockAPI != nil {
+		// Use mock in tests
+		api = vn.MockAPI
+	} else {
+		realAPI, err := connector.GetSubstrateApi(spec, bootIndex)
+		if err != nil {
+			return fmt.Errorf("API connection failed: %w", err)
+		}
+		api = &substrate.APIWrapper{API: realAPI}
+	}
+
 	result := VerificationResult{
 		NodeID:    vn.host.ID().String(),
 		BootIndex: bootIndex,
-		IsSuccess: true, // assume success, set to false on any failure
+		IsSuccess: true,
 	}
 
-	if err != nil {
-		result.ErrorMsg = fmt.Sprintf("API connection failed: %v", err)
+	// Try to get metadata
+	result_chain, err1 := api.Chain()
+	result_nodename, err2 := api.Name()
+	result_version, err3 := api.Version()
+	blockHash, err4 := api.GetBlockHashLatest()
+
+	// Handle metadata errors
+	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
 		result.IsSuccess = false
+		result.ErrorMsg = fmt.Sprintf("Metadata fetch errors: Chain=%v, Name=%v, Version=%v, BlockHash=%v",
+			err1, err2, err3, err4)
 	} else {
-		// Try to get metadata
-		result_chain, err1 := api.RPC.System.Chain()
-		result_nodename, err2 := api.RPC.System.Name()
-		result_version, err3 := api.RPC.System.Version()
-		blockHash, err4 := api.RPC.Chain.GetBlockHashLatest()
-
-		// If any error occurs, mark failure
-		if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-			result.IsSuccess = false
-			result.ErrorMsg = fmt.Sprintf("Metadata fetch errors: Chain=%v, Name=%v, Version=%v, BlockHash=%v",
-				err1, err2, err3, err4)
-		} else {
-			// Populate result
-			result.ChainName = convertTextToString(result_chain)
-			result.NodeName = convertTextToString(result_nodename)
-			result.Version = convertTextToString(result_version)
-			result.BlockHash = blockHash.Hex()
-		}
+		result.ChainName = convertTextToString(result_chain)
+		result.NodeName = convertTextToString(result_nodename)
+		result.Version = convertTextToString(result_version)
+		result.BlockHash = blockHash.Hex()
 	}
 
-	// Broadcast result
+	// Marshal and broadcast
 	resultJSON, err := json.Marshal(result)
 	if err != nil {
 		return fmt.Errorf("failed to marshal verification result: %w", err)
@@ -241,6 +249,7 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 	vn.SendMessage(ctx, string(resultJSON))
 	return nil
 }
+
 
 func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string, bootIndex int, timeout time.Duration) (*VerificationResult, error) {
 	// 1) connect to boot node, this function will also broadcast the result to other peers
