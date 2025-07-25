@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -182,6 +183,7 @@ func runCmd(directory string, args ...string) {
     cmd.Stderr = log.Writer()
     if err := cmd.Run(); err != nil {
         log.Fatalf("command failed: %v", err)
+		debug.PrintStack()
     }
 }
 
