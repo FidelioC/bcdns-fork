@@ -182,8 +182,8 @@ func runCmd(directory string, args ...string) {
     cmd.Stdout = log.Writer()
     cmd.Stderr = log.Writer()
     if err := cmd.Run(); err != nil {
-        log.Fatalf("command failed: %v", err)
 		debug.PrintStack()
+        log.Fatalf("command failed: %v", err)
     }
 }
 

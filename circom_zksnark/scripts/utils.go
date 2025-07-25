@@ -1,4 +1,4 @@
-package go_modules
+package scripts
 
 import (
 	"fmt"
