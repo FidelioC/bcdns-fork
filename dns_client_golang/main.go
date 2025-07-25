@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -137,6 +138,17 @@ func main() {
 	fmt.Println(json_target)
 	// verify returned target spec
 	verifying_network.VerifySpec(json_target, numNodes, nil)
+
+	// wait until combined_result.json exist
+	resultFile := "./combined_result.json"
+	for i := 0; i < 10; i++ {
+		if _, err := os.Stat(resultFile); err == nil {
+			break
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+
+	verifying_network.ZkSnark_prove("../circom_zksnark/scripts/zkSnark.go", domain, "../../dns_client_golang/combined_result.json")
 
 	select{} // prevent main from exiting
 }
