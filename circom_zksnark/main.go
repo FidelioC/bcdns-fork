@@ -2,12 +2,18 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/khalidzahra/dns_client/scripts"
 )
 
 func main(){
+	err := os.Chdir("./scripts")
+	if err != nil {
+		log.Fatalf("Failed to change directory: %v", err)
+	}
+	
 	if len (os.Args) < 2{
 		fmt.Println(`Usages: 
 			- go run zkSnark.go --init <domain> 

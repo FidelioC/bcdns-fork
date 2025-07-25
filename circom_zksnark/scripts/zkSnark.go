@@ -24,18 +24,17 @@ const (
 )
 
 func InitProve(domain string) {
-
 	CreateFolder(INIT_FOLDER_NAME)
 
 	// create tld and target spec input json file based off the domain name
-	InitSpecInputPy(domain, TLD_FILE_NAME, TARGET_FILE_NAME)
+	InitSpecInputPy("initSpecInput.py", domain, TLD_FILE_NAME, TARGET_FILE_NAME)
 
 	// create format binaries json
-	CheckFormatSpecPy(FORMAT_RESULT_INPUT, FORMAT_RESULT_OUTPUT)
+	CheckFormatSpecPy("checkSpecFormat.py", FORMAT_RESULT_INPUT, FORMAT_RESULT_OUTPUT)
 
 	// combine both files spec (main & id) + (format binaries) to create circom json input
-	CombineJSONFile(TLD_FILE_NAME, FORMAT_RESULT_OUTPUT, TLD_CIRCOM_INPUT)
-	CombineJSONFile(TARGET_FILE_NAME, FORMAT_RESULT_OUTPUT, TARGET_CIRCOM_INPUT)
+	CombineJSONFile("combineJson.py", TLD_FILE_NAME, FORMAT_RESULT_OUTPUT, TLD_CIRCOM_INPUT)
+	CombineJSONFile("combineJson.py", TARGET_FILE_NAME, FORMAT_RESULT_OUTPUT, TARGET_CIRCOM_INPUT)
 
 	// create circom prove
 	CallBashFiles("./runCircom.sh", TLD_INPUT_FOLDER, "../.././circom_inputs_init/tldCircomInput.json")
@@ -51,13 +50,13 @@ func GenerateProve(domain_mode string, prove_file_path string) {
 	CreateFolder(prove_folder_name)
 
 	// create format binaries json
-	CheckFormatSpecPy(prove_file_path, prove_folder_name+PROVE_FORMAT_OUTPUT)
+	CheckFormatSpecPy("checkSpecFormat.py", prove_file_path, prove_folder_name+PROVE_FORMAT_OUTPUT)
 
 	// get the name and id field, convert to int
-	NameIdConvertPy(prove_file_path, prove_folder_name+PROVE_NAME_ID_OUTPUT)
+	NameIdConvertPy("nameIdIntConvert.py", prove_file_path, prove_folder_name+PROVE_NAME_ID_OUTPUT)
 
 	// combine both files spec (main & id) + (format binaries) to create circom json input
-	CombineJSONFile(prove_folder_name+PROVE_FORMAT_OUTPUT, prove_folder_name+PROVE_NAME_ID_OUTPUT, prove_folder_name+PROVE_CIRCOM_INPUT)
+	CombineJSONFile("combineJson.py", prove_folder_name+PROVE_FORMAT_OUTPUT, prove_folder_name+PROVE_NAME_ID_OUTPUT, prove_folder_name+PROVE_CIRCOM_INPUT)
 
 	// run circom zksnark proofs
 	CallBashFiles("./runCircom.sh", PROVE_CIRCOM_INPUT_FOLDER+"-"+domain_mode, "../"+prove_folder_name+PROVE_CIRCOM_INPUT)

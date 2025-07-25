@@ -23,50 +23,31 @@ func CreateFolder(folderName string) error{
 	return nil
 }
 
-func InitSpecInputPy(domain string, tldOutput string, targetOutput string) error{
-	cmd := exec.Command("python3", "initSpecInput.py", "--domain", domain, "--tld-output", tldOutput, "--target-output", targetOutput)
+func InitSpecInputPy(pythonScript string, domain string, tldOutput string, targetOutput string) error{
+	cmd := exec.Command("python3", pythonScript, "--domain", domain, "--tld-output", tldOutput, "--target-output", targetOutput)
 
-	output, err := cmd.CombinedOutput()
-	if err != nil{
-		printErrMessage(output, err)
-		return err
-	}
-
-	fmt.Println(string(output))
-	return nil
+	return getResultCmd(*cmd)
 }
 
-func CheckFormatSpecPy(formatInput string, formatResultOutput string) error{
-	cmd := exec.Command("python3", "checkSpecFormat.py", "--input-file", formatInput, "--output-file", formatResultOutput)
+func CheckFormatSpecPy(pythonScript string, formatInput string, formatResultOutput string) error{
+	cmd := exec.Command("python3", pythonScript, "--input-file", formatInput, "--output-file", formatResultOutput)
 
-	output, err := cmd.CombinedOutput()
-	if err != nil{
-		printErrMessage(output, err)
-		return err
-	}
-
-	fmt.Println(string(output))
-	return nil
+	return getResultCmd(*cmd)
 }
 
-func CombineJSONFile(file1 string, file2 string, combineFileOutput string) error{
-	cmd := exec.Command("python3", "combineJson.py", "--file1", file1, "--file2", file2, "--output", combineFileOutput)
+func CombineJSONFile(pythonScript string, file1 string, file2 string, combineFileOutput string) error{
+	cmd := exec.Command("python3", pythonScript, "--file1", file1, "--file2", file2, "--output", combineFileOutput)
 
-	output, err := cmd.CombinedOutput()
-
-	if err != nil{
-		printErrMessage(output, err)
-		return err
-	}
-
-	fmt.Println(string(output))
-
-	return nil
+	return getResultCmd(*cmd)
 }
 
-func NameIdConvertPy(input string, outputFile string) error{
-	cmd := exec.Command("python3", "nameIdIntConvert.py", "--input", input, "--output", outputFile)
+func NameIdConvertPy(pythonScript string, input string, outputFile string) error{
+	cmd := exec.Command("python3", pythonScript, "--input", input, "--output", outputFile)
 
+	return getResultCmd(*cmd)
+}
+
+func getResultCmd(cmd exec.Cmd) error{
 	output, err := cmd.CombinedOutput()
 
 	if err != nil{
