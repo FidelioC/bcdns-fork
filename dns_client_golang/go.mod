@@ -1,10 +1,11 @@
 module github.com/khalidzahra/dns_client
 
-go 1.23.0
+go 1.24.0
 
 toolchain go1.24.3
 
 require (
+	github.com/FidelioC/circom_zksnark v0.0.0-00010101000000-000000000000
 	github.com/centrifuge/go-substrate-rpc-client/v4 v4.2.1
 	github.com/libp2p/go-libp2p v0.41.1
 	github.com/libp2p/go-libp2p-pubsub v0.14.0
@@ -126,3 +127,5 @@ require (
 	gopkg.in/natefinch/npipe.v2 v2.0.0-20160621034901-c1b8fa8bdcce // indirect
 	lukechampine.com/blake3 v1.4.0 // indirect
 )
+
+replace github.com/FidelioC/circom_zksnark => ../circom_zksnark

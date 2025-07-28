@@ -7,11 +7,10 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
-	"runtime/debug"
 	"strings"
 	"time"
 
+	"github.com/FidelioC/circom_zksnark/scripts"
 	"github.com/khalidzahra/dns_client/substrate"
 	ma "github.com/multiformats/go-multiaddr"
 )
@@ -170,21 +169,9 @@ func VerifySpec(json_target string, numNodes int, mock_nodes []*VerifierNode) er
 }
 
 func ZkSnark_prove(script_path string, domain_name string, input_json_path string){
-	runCmd(script_path, "--init", domain_name)
-    runCmd(script_path, "--node-generate-prove", "--tld",  input_json_path)
-    runCmd(script_path, "--verify-prove", "--tld", "../proveCircomFiles-tld")
-    runCmd(script_path, "--cleanup")
+	scripts.InitProve(domain_name)
+	scripts.GenerateProve(domain_name, input_json_path)
+	scripts.VerifyProve("tld", "../proveCircomFiles-tld")
+	scripts.Cleanup()
 }
-
-func runCmd(directory string, args ...string) {
-    cmd := exec.Command("go", append([]string{"run", "zkSnark.go"}, args...)...)
-    cmd.Dir = directory
-    cmd.Stdout = log.Writer()
-    cmd.Stderr = log.Writer()
-    if err := cmd.Run(); err != nil {
-		debug.PrintStack()
-        log.Fatalf("command failed: %v", err)
-    }
-}
-
 

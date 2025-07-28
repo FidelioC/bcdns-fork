@@ -147,6 +147,5 @@ func main() {
 	// }
 	domain := "example.com"
 	verifying_network.ZkSnark_prove("../circom_zksnark/scripts/zkSnark.go", domain, "../../dns_client_golang/combined_result.json")
-
 	select{} // prevent main from exiting
 }

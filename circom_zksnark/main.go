@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/khalidzahra/dns_client/scripts"
+	"github.com/FidelioC/circom_zksnark/scripts"
 )
 
 func main(){

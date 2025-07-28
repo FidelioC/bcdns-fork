@@ -1,3 +1,3 @@
-module github.com/khalidzahra/dns_client
+module github.com/FidelioC/circom_zksnark
 
 go 1.24.0
