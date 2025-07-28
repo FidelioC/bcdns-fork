@@ -1,9 +1,7 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -111,43 +109,43 @@ listenerLoop:
 
 func main() {
 	// Command line args
-	var eval, assetEval, listen, useCache bool
-	var runs, runsPerSecond int
-	var domain, outFile string
-	var target *substrate.ChainSpecRes
-	var numNodes int = 3
-	flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
-	flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
-	flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
-	flag.BoolVar(&assetEval, "assetEval", false, "Evaluate asset registration performance by running multiple times")
-	flag.BoolVar(&listen, "listen", false, "Listen to events emitted by the chain")
-	flag.BoolVar(&useCache, "useCache", false, "Use caching for interacting with the chain")
-	flag.IntVar(&runs, "runs", 1, "Number of runs for evaluation")
-	flag.IntVar(&runsPerSecond, "rps", 1, "Number of runs per second for evaluation")
-	flag.Parse()
+	// var eval, assetEval, listen, useCache bool
+	// var runs, runsPerSecond int
+	// var domain, outFile string
+	// var target *substrate.ChainSpecRes
+	// var numNodes int = 3
+	// flag.StringVar(&domain, "domain", "example.com", "Domain to fetch chainspec for")
+	// flag.StringVar(&outFile, "outFile", "eval.csv", "Name of file to output eval results")
+	// flag.BoolVar(&eval, "eval", false, "Evaluate performance by running multiple times")
+	// flag.BoolVar(&assetEval, "assetEval", false, "Evaluate asset registration performance by running multiple times")
+	// flag.BoolVar(&listen, "listen", false, "Listen to events emitted by the chain")
+	// flag.BoolVar(&useCache, "useCache", false, "Use caching for interacting with the chain")
+	// flag.IntVar(&runs, "runs", 1, "Number of runs for evaluation")
+	// flag.IntVar(&runsPerSecond, "rps", 1, "Number of runs per second for evaluation")
+	// flag.Parse()
 
-	if assetEval {
-		registerAssets(domain, outFile, runsPerSecond, runs)
-	} else if listen {
-		listenToEvents(runs, outFile, useCache)
-	} else {
-		target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
-	}
+	// if assetEval {
+	// 	registerAssets(domain, outFile, runsPerSecond, runs)
+	// } else if listen {
+	// 	listenToEvents(runs, outFile, useCache)
+	// } else {
+	// 	target = fetchSpec(domain, runs, runsPerSecond, outFile, eval, useCache)
+	// }
 
-	json_target, _ := verifying_network.ChainSpecToJson(target)
-	fmt.Println(json_target)
-	// verify returned target spec
-	verifying_network.VerifySpec(json_target, numNodes, nil)
+	// json_target, _ := verifying_network.ChainSpecToJson(target)
+	// fmt.Println(json_target)
+	// // verify returned target spec
+	// verifying_network.VerifySpec(json_target, numNodes, nil)
 
-	// wait until combined_result.json exist
-	resultFile := "./combined_result.json"
-	for i := 0; i < 10; i++ {
-		if _, err := os.Stat(resultFile); err == nil {
-			break
-		}
-		time.Sleep(500 * time.Millisecond)
-	}
-
+	// // wait until combined_result.json exist
+	// resultFile := "./combined_result.json"
+	// for i := 0; i < 10; i++ {
+	// 	if _, err := os.Stat(resultFile); err == nil {
+	// 		break
+	// 	}
+	// 	time.Sleep(500 * time.Millisecond)
+	// }
+	domain := "example.com"
 	verifying_network.ZkSnark_prove("../circom_zksnark/scripts/zkSnark.go", domain, "../../dns_client_golang/combined_result.json")
 
 	select{} // prevent main from exiting

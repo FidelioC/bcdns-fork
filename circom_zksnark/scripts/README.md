@@ -21,7 +21,7 @@
 - example usage overall:
 
 1.  cd ./circom_zksnark/scripts/
-2.  go run zkSnark.go --init example.com
-3.  go run zkSnark.go --node-generate-prove --tld ../test/tldChainSpecTest.json
-4.  go run zkSnark.go --verify-prove --tld ../proveCircomFiles-tld
-5.  go run zkSnark.go --cleanup
+2.  go run main.go --init example.com
+3.  go run main.go --node-generate-prove --tld ../test/tldChainSpecTest.json
+4.  go run main.go --verify-prove --tld ../proveCircomFiles-tld
+5.  go run main.go --cleanup
