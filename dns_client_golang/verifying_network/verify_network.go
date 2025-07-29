@@ -169,6 +169,10 @@ func VerifySpec(json_target string, numNodes int, mock_nodes []*VerifierNode) er
 }
 
 func ZkSnark_prove(script_path string, domain_name string, input_json_path string){
+	err := os.Chdir("../../circom_zksnark/scripts")
+	if err != nil {
+		log.Fatalf("Failed to change directory: %v", err)
+	}
 	scripts.InitProve(domain_name)
 	scripts.GenerateProve(domain_name, input_json_path)
 	scripts.VerifyProve("tld", "../proveCircomFiles-tld")
