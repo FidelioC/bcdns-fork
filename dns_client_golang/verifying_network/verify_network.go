@@ -172,6 +172,6 @@ func ZkSnark_prove(domain_name string, input_json_path string){
 	scripts.InitProve(domain_name)
 	prove_folder := scripts.GenerateProve("target", input_json_path)
 	scripts.VerifyProve("--target", prove_folder)
-	// scripts.Cleanup()
+	scripts.Cleanup()
 }
 
