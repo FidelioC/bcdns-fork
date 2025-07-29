@@ -24,6 +24,8 @@ const (
 )
 
 func InitProve(domain string) {
+	fmt.Println("======== Starting Init Prove zksnark ========")
+
 	CreateFolder(INIT_FOLDER_NAME)
 
 	// create tld and target spec input json file based off the domain name
@@ -44,6 +46,8 @@ func InitProve(domain string) {
 }
 
 func GenerateProve(domain_mode string, prove_file_path string) {
+	fmt.Println("======== Starting Generate Prove zksnark ========")
+
 	input_file_name := GetFileNameWithoutExt(prove_file_path)
 	prove_folder_name := "../" + input_file_name + "-" + domain_mode
 
@@ -65,6 +69,8 @@ func GenerateProve(domain_mode string, prove_file_path string) {
 }
 
 func VerifyProve(tld_or_target string, prove_folder string) {
+	fmt.Println("======== Starting Verify Prove zksnark ========")
+
 	switch tld_or_target {
 	case "--target":
 		CallBashFiles("./verifyProof.sh", TARGET_INPUT_FOLDER+VERIFICATION_KEY_PATH,
@@ -81,6 +87,8 @@ func VerifyProve(tld_or_target string, prove_folder string) {
 }
 
 func Cleanup() {
+	fmt.Println("======== Starting Cleanup zksnark ========")
+
 	CallBashFiles("./cleanCircomFiles.sh", "tldCircomInput")
 	CallBashFiles("./cleanCircomFiles.sh", "targetCircomInput")
 
