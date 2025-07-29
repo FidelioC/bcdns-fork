@@ -170,8 +170,8 @@ func VerifySpec(json_target string, numNodes int, mock_nodes []*VerifierNode) er
 
 func ZkSnark_prove(domain_name string, input_json_path string){
 	scripts.InitProve(domain_name)
-	scripts.GenerateProve(domain_name, input_json_path)
-	scripts.VerifyProve("--tld", "../proveCircomFiles-tld")
+	prove_folder := scripts.GenerateProve(domain_name, input_json_path)
+	scripts.VerifyProve("--tld", "../" + prove_folder)
 	// scripts.Cleanup()
 }
 

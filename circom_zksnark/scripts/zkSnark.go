@@ -45,7 +45,7 @@ func InitProve(domain string) {
 	fmt.Println("Finished init zk-snark circom")
 }
 
-func GenerateProve(domain_mode string, prove_file_path string) {
+func GenerateProve(domain_mode string, prove_file_path string) string{
 	fmt.Println("======== Starting Generate Prove zksnark ========")
 
 	input_file_name := GetFileNameWithoutExt(prove_file_path)
@@ -66,6 +66,8 @@ func GenerateProve(domain_mode string, prove_file_path string) {
 	CallBashFiles("./runCircom.sh", PROVE_CIRCOM_INPUT_FOLDER+"-"+domain_mode, "../"+prove_folder_name+PROVE_CIRCOM_INPUT)
 
 	fmt.Println("Finished creating proves zk-snark circom")
+
+	return prove_folder_name
 }
 
 func VerifyProve(tld_or_target string, prove_folder string) {
