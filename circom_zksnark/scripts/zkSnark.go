@@ -67,7 +67,7 @@ func GenerateProve(domain_mode string, prove_file_path string) string{
 
 	fmt.Println("Finished creating proves zk-snark circom")
 
-	return prove_folder_name
+	return PROVE_CIRCOM_INPUT_FOLDER+"-"+domain_mode
 }
 
 func VerifyProve(tld_or_target string, prove_folder string) {
