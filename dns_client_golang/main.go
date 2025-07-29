@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -146,6 +148,13 @@ func main() {
 	// 	time.Sleep(500 * time.Millisecond)
 	// }
 	domain := "example.com"
+	err := os.Chdir("../circom_zksnark/scripts")
+	if err != nil {
+		log.Fatalf("Failed to change directory: %v", err)
+	}
+	dir, _ := os.Getwd()
+
+	fmt.Println("Current dir: ", dir)
 	verifying_network.ZkSnark_prove("../circom_zksnark/scripts/zkSnark.go", domain, "../../dns_client_golang/combined_result.json")
 	select{} // prevent main from exiting
 }
