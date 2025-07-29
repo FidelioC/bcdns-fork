@@ -147,7 +147,7 @@ func main() {
 	// 	}
 	// 	time.Sleep(500 * time.Millisecond)
 	// }
-	domain := "example"
+	domain := "example.com"
 	err := os.Chdir("../circom_zksnark/scripts")
 	if err != nil {
 		log.Fatalf("Failed to change directory: %v", err)
