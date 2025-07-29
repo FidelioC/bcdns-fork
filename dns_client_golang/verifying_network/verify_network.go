@@ -173,6 +173,9 @@ func ZkSnark_prove(script_path string, domain_name string, input_json_path strin
 	if err != nil {
 		log.Fatalf("Failed to change directory: %v", err)
 	}
+	dir, _ := os.Getwd()
+
+	fmt.Println("Current dir: ", dir)
 	scripts.InitProve(domain_name)
 	scripts.GenerateProve(domain_name, input_json_path)
 	scripts.VerifyProve("tld", "../proveCircomFiles-tld")
