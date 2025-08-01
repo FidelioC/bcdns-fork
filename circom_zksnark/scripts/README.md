@@ -1,14 +1,38 @@
-- circom setup:
-  git clone https://github.com/iden3/circom.git
-  cd circom
-  cargo build --release
-  cargo install --path circom
+# Circom Setup
+
+This page will give you a step by step instruction on how to setup circom, used for the zero knowledge proof.
+
+## Circom Installation:
+
+Under circom_zksnark/scripts/, clone the `circom` repository:
+
+```bash
+git clone https://github.com/iden3/circom.git
+```
+
+Change directory to the downloaded `circom` folder:
+
+```bash
+cd circom
+```
+
+Use cargo build to compile:
+
+```bash
+cargo build --release
+```
+
+Lastly set the circom to known path:
+
+```bash
+cargo install --path circom
+```
 
 - circomlib setup:
   npm i circomlib
 
 - snarkjs setup:
-  sudo npm install -g snarkjs
+  npm install -g snarkjs
 
 - example usage overall:
 
