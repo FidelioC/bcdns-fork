@@ -31,7 +31,13 @@ cargo install --path circom
 ## Installing snarkjs
 
 ```bash
-  npm install -g snarkjs
+npm install -g snarkjs
+```
+
+## Installing circomlib
+
+```bash
+npm i circomlib
 ```
 
 ## Reference
@@ -59,6 +65,8 @@ go run main.go --init example.com
 ```bash
 go run main.go --node-generate-prove --tld ../test/tldChainSpecTest.json
 ```
+
+**Note:** when being asked to "Enter a random text. (Entropy):" in the terimnal, just type in any character and press enter.
 
 4. This process will compare the result from the initial process (2nd step) to the result of the node generate prove process (3rd step) and see if the result from the (3rd step) matches the certificate that has been generated on the 2nd step (i.e, this process compare the prover's result to the verifier's certificate).
 
