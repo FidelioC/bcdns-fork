@@ -1,5 +1,13 @@
 package scripts
 
+// # ========================================================================================
+// # Script Name : zkSnark.go
+// # Author      : Fidelio Ciandy
+// # Description : This zkSnark.go file is a library that will allow us to do the zk-snark prove
+// #               It will mainly call other py, bash scripts and functions from utils.go,
+// # 			   to intialize prove, generate prove, verify prove as well as cleaning up all the processing files.
+// # ========================================================================================
+
 import (
 	"fmt"
 )

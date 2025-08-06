@@ -1,6 +1,13 @@
 import click
 import json
 
+# ============================================
+# Script Name : initSpecInput.py
+# Author      : Fidelio Ciandy
+# Description : Given a domain name, this script will generate the expected output chain spec tld and target files in json
+# Usage       : python3 initSpecInput.py --domain example.com --tld-output tld_output_path.json --target-output target_output_path.json
+# ============================================
+
 
 class SpecInput:
     def __init__(self, name, id):

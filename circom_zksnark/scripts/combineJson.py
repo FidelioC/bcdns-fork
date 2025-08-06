@@ -2,6 +2,13 @@ import json
 import click
 import sys
 
+# ============================================
+# Script Name : combineJson.py
+# Author      : Fidelio Ciandy
+# Description : Combine two json files two one singular file
+# Usage       : python3 combineJson.py --file1 file1.json --file2 file2.json --output output_file.json
+# ============================================
+
 
 def load_json_file(filepath):
     try:

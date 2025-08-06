@@ -1,7 +1,30 @@
 import json
 import click
 
-# usage: python3 checkSpecFormat.py --input-file rootSpec.json --output-file conn_string_result.json
+# ============================================
+# Script Name : checkSpecFormat.py
+# Author      : Fidelio Ciandy
+# Description : Checks the Chain Spec JSON format and outputs a result summary.
+# Usage       : python3 checkSpecFormat.py --input-file rootSpec.json --output-file conn_string_result.json
+#
+# Example Input (rootSpec.json):
+# {
+#   "name": "root",
+#   "id": "root",
+#   "bootNodes": [
+#     "/ip4/172.18.0.2/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh",
+#     "/ip4/172.18.0.3/tcp/9945/p2p/12D3KooWNL4mZo8y7oAes3VRRnbHy91TDLxnjrDsnMFZkPebB2Rh"
+#   ]
+# }
+#
+# Example Output (conn_string_result.json):
+# {
+#   "name": 1,
+#   "id": 1,
+#   "bootNodes": 1
+# }
+# ============================================
+
 
 required_keys = [
     "name",
