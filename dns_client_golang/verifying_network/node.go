@@ -7,8 +7,6 @@ import (
 	"log"
 	"time"
 
-	// https://pkg.go.dev/github.com/libp2p/go-libp2p#section-readme
-
 	"github.com/centrifuge/go-substrate-rpc-client/v4/types"
 	"github.com/khalidzahra/dns_client/substrate"
 	libp2p "github.com/libp2p/go-libp2p"

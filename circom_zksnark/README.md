@@ -21,3 +21,14 @@ The verification process adheres to the following 5 steps:
 5. The client will collect all results from the verifying network and accept the value that received the highest number of votes.
 
 6. After deciding on the most agreed-upon result, the client will perform a final verification of the BootNode data using zero-knowledge proof.
+
+## Running The Whole Process
+
+To run the whole process, please refer to both of these .md files:
+
+- [README.md](../dns_client_golang/README.md)
+- [testing.md](../dns_client_golang/testing.md)
+
+Demo video:
+
+[Click to watch the demo video](./demo_example.mp4)
