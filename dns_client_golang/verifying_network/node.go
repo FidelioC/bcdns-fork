@@ -1,3 +1,13 @@
+// ================================================================
+// File: node.go
+// Description: Defines a VerifierNode which uses libp2p and gossip
+//   pubsub to verify boot nodes in a decentralized Substrate network.
+//   It connects to a boot node, fetches metadata (chain name, node
+//   name, version, latest block hash), broadcasts the results, and
+//   performs consensus across multiple peers.
+// Author: Fidelio Ciandy
+// =================================================================
+
 package verifying_network
 
 import (
@@ -17,6 +27,8 @@ import (
 	ma "github.com/multiformats/go-multiaddr" //https://github.com/multiformats/multiaddr
 )
 
+// VerificationResult holds the result of connecting to a boot node and
+// fetching its metadata for comparison/consensus
 type VerificationResult struct {
 	NodeID      string `json:"nodeId"`
 	ChainName   string `json:"chainName"`
@@ -28,15 +40,17 @@ type VerificationResult struct {
 	ErrorMsg    string `json:"errorMsg,omitempty"`
 }
 
+// VerifierNode represents a libp2p peer node capable of verifying
+// a boot node, broadcasting its findings, and participating in consensus
 type VerifierNode struct {
-	host  host.Host
-	ps    *pubsub.PubSub
-	topic *pubsub.Topic
-	sub   *pubsub.Subscription
-	receivedResults map[string]VerificationResult
-	consensusAchieved bool
-	consensusResult *VerificationResult
-	totalNodes int
+	host  host.Host // the libp2p host for the node
+	ps    *pubsub.PubSub // GossipSub instance
+	topic *pubsub.Topic // pubsub topic
+	sub   *pubsub.Subscription // subscription to the topic
+	receivedResults map[string]VerificationResult // results received from peers
+	consensusAchieved bool // flag for whether consensus was reached
+	consensusResult *VerificationResult // the result agreed upon
+	totalNodes int  // expected number of participating nodes
 	
 	// MockAPI for testing
 	MockAPI substrate.APIInterface
@@ -46,6 +60,12 @@ type VerifierNode struct {
 	OnError  func(err error)
 }
 
+// ============================================================================
+// VerifierNode Initialization and Setup
+// ============================================================================
+
+// NewVerifierNode creates and initializes a new libp2p peer node, optionally
+// connecting it to a bootstrap peer via multiaddress string
 func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, nameTopic string) (*VerifierNode, error) {
 	// create the libp2p node (host)
 	newHost, err := libp2p.New() 
@@ -101,13 +121,12 @@ func NewVerifierNode(ctx context.Context, bootstrap string, totalNodes int, name
 	}, nil
 }
 
-func (vn *VerifierNode) PrintHostInfo() {
-	fmt.Println("Node ID:", vn.host.ID())
-	for _, addr := range vn.host.Addrs() {
-		fmt.Println("Listening on:", addr.Encapsulate(ma.StringCast("/p2p/"+vn.host.ID().String())))
-	}
-}
+// ============================================================================
+// Core Messaging + Consensus
+// ============================================================================
 
+// ListenForMessages continuously listens for messages on the pubsub topic,
+// deserializes them, logs and stores them, and optionally triggers consensus
 func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 	go func() {
 		for {
@@ -153,6 +172,8 @@ func (vn *VerifierNode) ListenForMessages(ctx context.Context) {
 	}()
 }
 
+// CheckConsensus analyzes all received results and sets the consensus result
+// if a simple majority agrees on the same chain metadata
 func (vn *VerifierNode) CheckConsensus() {
 	type key struct {
 		ChainName string
@@ -192,7 +213,19 @@ func (vn *VerifierNode) CheckConsensus() {
 	}
 }
 
+// SendMessage broadcasts a string message to all peers via pubsub
+func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
+	err := vn.topic.Publish(ctx, []byte(message))
+	if err != nil {
+		log.Println("Error publishing message:", err)
+	}
+}
 
+// ============================================================================
+// Boot Node Verification
+// ============================================================================
+// ConnectBootNode attempts to connect to a Substrate boot node using the
+// provided JSON chain spec and retrieves its metadata
 func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, bootIndex int) error {
 	var spec substrate.ChainSpecRes
 	err := json.Unmarshal([]byte(targetJSON), &spec)
@@ -248,7 +281,8 @@ func (vn *VerifierNode) ConnectBootNode(ctx context.Context, targetJSON string, 
 	return nil
 }
 
-
+// GetBootNodeResult triggers a connection to the boot node and waits for a
+// consensus result or timeout before returning
 func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string, bootIndex int, timeout time.Duration) (*VerificationResult, error) {
 	// 1) connect to boot node, this function will also broadcast the result to other peers
 	err := vn.ConnectBootNode(ctx, targetJSON, bootIndex)
@@ -274,10 +308,16 @@ func (vn *VerifierNode) GetBootNodeResult(ctx context.Context, targetJSON string
 	}
 }
 
-func (vn *VerifierNode) SendMessage(ctx context.Context, message string) {
-	err := vn.topic.Publish(ctx, []byte(message))
-	if err != nil {
-		log.Println("Error publishing message:", err)
+
+
+// ============================================================================
+// Utility Functions
+// ============================================================================
+
+func (vn *VerifierNode) PrintHostInfo() {
+	fmt.Println("Node ID:", vn.host.ID())
+	for _, addr := range vn.host.Addrs() {
+		fmt.Println("Listening on:", addr.Encapsulate(ma.StringCast("/p2p/"+vn.host.ID().String())))
 	}
 }
 
